@@ -62,19 +62,19 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
     private final Pose startPose = new Pose(129.526, 127.883, Math.toRadians(45)).mirror();
 
     private final Pose p1End  = new Pose(84.931, 89.214).mirror();
-    private final Pose p2End  = new Pose(102.087, 83.383).mirror();
-    private final Pose p3End  = new Pose(126.764, 83.921).mirror();
+    private final Pose p2End  = new Pose(102.087, 86.583).mirror();
+    private final Pose p3End  = new Pose(126.764, 85.321).mirror();
     private final Pose p4End  = new Pose(100, 100).mirror();
     private final Pose p5End  = new Pose(94.386, 59.284).mirror();
 
     private final Pose p6CP   = new Pose(124.085, 58.610).mirror();
-    private final Pose p6End  = new Pose(126.323, 58.361).mirror();
+    private final Pose p6End  = new Pose(126.323, 59.361).mirror();
 
     private final Pose p8CP   = new Pose(104.703, 53.168).mirror();
     private final Pose p8End  = new Pose(132.8, 65.5).mirror();
 
     private final Pose p9End = new Pose(85.626, 37.187).mirror();
-    private final Pose p10End = new Pose(127.716, 37.051).mirror();
+    private final Pose p10End = new Pose(127.716, 38.051).mirror();
     private final Pose p11End = new Pose(76.578, 20.858).mirror();
     private final Pose p12End = new Pose(76.707, 27.152).mirror();
 
@@ -99,7 +99,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                         new Pose(p2End.getX(), p2End.getY()),
                         new Pose(p3End.getX(), p3End.getY())
                 ))
-                .setLinearHeadingInterpolation(H135, H180, 0.3)
+                .setLinearHeadingInterpolation(H135, H180, 0.2)
                 .build();
 //
 //        path3 = follower.pathBuilder()
@@ -116,7 +116,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                         new Pose(p4End.getX(), p4End.getY())
                 ))
                 .setBrakingStart(0.7)
-                .setLinearHeadingInterpolation(H180, H135, 0.3)
+                .setLinearHeadingInterpolation(H180, H135, 0.2)
                 .build();
 
         path5 = follower.pathBuilder()
@@ -125,7 +125,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                         new Pose(p5End.getX(), p5End.getY()),
                         new Pose(p6End.getX(), p6End.getY())
                 ))
-                .setLinearHeadingInterpolation(H135, H180, 0.3)
+                .setLinearHeadingInterpolation(H135, H180, 0.2)
                 .build();
 
 //        path6 = follower.pathBuilder()
@@ -141,7 +141,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                         new Pose(p6End.getX(), p6End.getY()),
                         new Pose(p4End.getX(), p4End.getY())
                 ))
-                .setLinearHeadingInterpolation(H160, H135, 0.3)
+                .setLinearHeadingInterpolation(H160, H135, 0.2)
                 .setBrakingStart(0.7)
                 .build();
 
@@ -151,7 +151,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                         new Pose(p8CP.getX(), p8CP.getY()),
                         new Pose(p8End.getX(), p8End.getY())
                 ))
-                .setLinearHeadingInterpolation(H135, H145, 0.3)
+                .setLinearHeadingInterpolation(H135, H145, 0.2)
                 .build();
 
         path9 = follower.pathBuilder()
@@ -169,7 +169,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                         new Pose(p8CP.getX(), p8CP.getY()),
                         new Pose(p8End.getX(), p8End.getY())
                 ))
-                .setLinearHeadingInterpolation(H135, H145, 0.3)
+                .setLinearHeadingInterpolation(H135, H145, 0.2)
                 .build();
 
         path11 = follower.pathBuilder()
@@ -177,7 +177,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                         new Pose(p8End.getX(), p8End.getY()),
                         new Pose(p4End.getX(), p4End.getY())
                 ))
-                .setLinearHeadingInterpolation(H155, H135, 0.3)
+                .setLinearHeadingInterpolation(H155, H135, 0.2)
                 .setBrakingStart(0.7)
                 .build();
 
@@ -251,10 +251,10 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
 
         SequentialCommandGroup shooterSequence = new SequentialCommandGroup(
                 new WaitCommand(200),
-                new isAimed(turret).withTimeout(400),
+                new isAimed(turret).withTimeout(500),
                 new transfer(intake, true)
                         .alongWith(new InstantCommand(() -> intake.intake2On())),
-                new WaitCommand(700)
+                new WaitCommand(800)
         );
 
         SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
@@ -286,7 +286,7 @@ public class BlueNearSide18BallsAuto extends CommandOpMode {
                                 .alongWith(new InstantCommand(() -> intake.intake2Off())),
                         new FollowPathCommand(follower, path8)
                 ),
-                new TurnToCommand(follower, H155).withTimeout(100),
+                new TurnToCommand(follower, H155).withTimeout(200),
                 new ParallelRaceGroup(
                         new allBallsDetected(intake),
                         new WaitCommand(1500)

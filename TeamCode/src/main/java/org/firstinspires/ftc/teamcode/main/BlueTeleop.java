@@ -182,14 +182,14 @@ public class BlueTeleop extends CommandOpMode {
         driverOp.getGamepadButton(GamepadKeys.Button.DPAD_UP)
                 .whileHeld(
                         new ParallelCommandGroup(
-                                new FollowPathCommand(follower,
-                                        follower.pathBuilder()
-                                                .addPath(new BezierLine(
-                                                        follower.getPose(),
-                                                        new Pose(100, 100).mirror())
-                                                )
-                                                .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(135))
-                                                .build()),
+//                                new FollowPathCommand(follower,
+//                                        follower.pathBuilder()
+//                                                .addPath(new BezierLine(
+//                                                        follower.getPose(),
+//                                                        new Pose(100, 100).mirror())
+//                                                )
+//                                                .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(135))
+//                                                .build()),
                                 new InstantCommand(() -> {shooter.setAutoShoot(false);}),
                                 new setShooter(shooter, 1210, 0.6),
                                 new InstantCommand(() -> {turret.isAutoCode = true;})

@@ -33,6 +33,7 @@ public class TurretTeleopTestV1 extends OpMode {
     public static double kI = 0.0;
     public static double kD = 0.0;
     public static double kF = 0.0002;
+    public static boolean setPoint = false;
     public static int target = 100;
 
 
@@ -47,10 +48,10 @@ public class TurretTeleopTestV1 extends OpMode {
         turret = new Turret(hardwareMap, null);
         follower = createFollower(hardwareMap);
         drivetrain = new DrivetrainTest(hardwareMap, telemetry);
-        follower.setStartingPose(new Pose(140,0,Math.toRadians(90)));
+        follower.setStartingPose(new Pose(28,0,Math.toRadians(90)));
         telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         intake = new Intake(hardwareMap, telemetry);
-//        turret.resetTurretEncoder();
+        turret.resetTurretEncoder();
         Localization.init(follower, telemetry);
 
         telemetry.addLine("Initialized. Press START to enable auto-aim.");
@@ -67,8 +68,9 @@ public class TurretTeleopTestV1 extends OpMode {
     @Override
     public void loop() {
         turret.setAutoAim(true);
-//        turret.turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
-        turret.setTargetTicks(target);
+        turret.isAutoCode = setPoint;
+        turret.turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
+//        turret.setTargetTicks(target);
         // Keep localization fresh
         // (If your PinpointLocalizer uses a different update method name, change this line.)
         telemetry.addData("encoder", turret.getPos());

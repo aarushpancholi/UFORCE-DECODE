@@ -56,19 +56,19 @@ public class RedNearSide18BallsAuto extends CommandOpMode {
     private static final double H45 = Math.toRadians(45);
 
     // --- Poses (from your provided Paths array) ---
-    private final Pose startPose = new Pose(125.526, 115.883, H45);
+    private final Pose startPose = new Pose(125.526, 117.883, H45);
 
     private final Pose p1End  = new Pose(87.431, 89.214);
-    private final Pose p2End  = new Pose(104.587, 83.383);
+    private final Pose p2End  = new Pose(100.587, 83.383);
     private final Pose p3End  = new Pose(130.264, 83.921);
     private final Pose p4End  = new Pose(96.934, 98.054);
-    private final Pose p5End  = new Pose(104.886, 59.284);
+    private final Pose p5End  = new Pose(100.886, 59.284);
 
     private final Pose p6CP   = new Pose(126.585, 56.610);
     private final Pose p6End  = new Pose(132.823, 56.361);
 
-    private final Pose p8CP   = new Pose(117.203, 53.168);
-    private final Pose p8End  = new Pose(134.2, 57);
+    private final Pose p8CP   = new Pose(117.203, 58.168);
+    private final Pose p8End  = new Pose(134.2, 58);
 
     private final Pose p9End = new Pose(105.126, 35.187);
     private final Pose p10End = new Pose(135.216, 30.051);
@@ -247,11 +247,11 @@ public class RedNearSide18BallsAuto extends CommandOpMode {
         Localization.init(follower, telemetryM);
 
         SequentialCommandGroup shooterSequence = new SequentialCommandGroup(
-                new WaitCommand(200),
+                new WaitCommand(300),
                 new isAimed(turret).withTimeout(400),
                 new transfer(intake, true)
                         .alongWith(new InstantCommand(() -> intake.intake2On())),
-                new WaitCommand(450)
+                new WaitCommand(600)
         );
 
         SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
