@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -83,7 +84,7 @@ public class Intake extends SubsystemBase {
     public void intake2On() {
 //        servoA.setPower(1.0);
 //        servoB.setPower(1.0);
-        intakeMotor.setPower(0.9);
+        intakeMotor.setPower(1.0);
 
     }
 

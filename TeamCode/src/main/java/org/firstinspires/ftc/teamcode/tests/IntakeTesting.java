@@ -22,8 +22,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 @Configurable
-@TeleOp(name = "Turret Auto Aim Test", group = "TeleOp")
-public class TurretTeleopTestV1 extends OpMode {
+@TeleOp(name = "Intake Auto Test", group = "TeleOp")
+public class IntakeTesting extends OpMode {
     private Turret turret;
     private Follower follower;
     private TelemetryManager telemetry;
@@ -68,14 +68,25 @@ public class TurretTeleopTestV1 extends OpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void loop() {
-        turret.setAutoAim(true);
-        turret.isAutoCode = setPoint;
-        turret.turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
+        int c = 0;
+        intake.intake1On();
+        intake.intake2On();
+//        turret.setAutoAim(true);
+//        turret.isAutoCode = setPoint;
+//        turret.turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
 //        turret.setTargetTicks(target);
         // Keep localization fresh
         // (If your PinpointLocalizer uses a different update method name, change this line.)
-        telemetry.addData("encoder", turret.getPos());
-        telemetry.addData("target", Turret.targetTicks);
+        telemetry.addData("s1", intake.isBallDetected01());
+        telemetry.addData("s2", intake.isBallDetected02());
+        telemetry.addData("s3", intake.isBallDetected03());
+        telemetry.addData("can intake", intake.canIntake());
+        telemetry.addData("all balls", intake.areAllBallsDetected());
+        if (intake.areAllBallsDetected()) {
+            c+=1;
+        }
+        telemetry.addData("count", c);
+//        telemetry.addData("target", Turret.targetTicks);
         Localization.update();
         drivetrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, 1.0);
 //        follower.setTeleOpDrive(

@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.globals.Localization;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.util.PIDFController;
 
@@ -29,18 +30,18 @@ public class ShooterTuningOp2 extends OpMode {
 
     private Turret turret;
     private Follower follower;
-    private ShooterNewPIDTest shooter;
+    private Shooter shooter;
     private Intake intake;
 
     private int speed = 0;
     private boolean autoAim = false;
-    private double hoodAngle = 0.8;
+    private double hoodAngle = 0.7;
 
     public void init() {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         sh = hardwareMap.get(DcMotorEx.class, "rsh");
         sh2 = hardwareMap.get(DcMotorEx.class, "lsm");
-        shooter = new ShooterNewPIDTest(hardwareMap);
+        shooter = new Shooter(hardwareMap, telemetryM, false);
         sh.setDirection(DcMotorSimple.Direction.FORWARD);
         sh2.setDirection(DcMotorSimple.Direction.FORWARD);
         I = 0.3;
@@ -50,6 +51,7 @@ public class ShooterTuningOp2 extends OpMode {
         controller1 = new PIDFController(P,I,0.0, 0);
         controller2 = new PIDFController(P,I,0.0, 0);
         turret = new Turret(hardwareMap, telemetryM);
+        turret.resetTurretEncoder();
         intake = new Intake(hardwareMap, telemetryM);
         follower = createFollower(hardwareMap);
         follower.setStartingPose(new Pose(135,9,Math.toRadians(90)));
@@ -80,6 +82,10 @@ public class ShooterTuningOp2 extends OpMode {
             intake.intake1On();
             intake.intake2On();
         }
+        if (gamepad1.b) {
+            intake.intake2Off();
+            intake.intakeOff();
+        }
         if (gamepad1.y) {
             turret.resetTurretEncoder();
         }
@@ -94,35 +100,54 @@ public class ShooterTuningOp2 extends OpMode {
             turret.setAutoAim(!autoAim);
         }
         if(gamepad1.dpadUpWasReleased()) {
-            targetVelocity += 25;
+            targetVelocity += 20;
         }
         if(gamepad1.dpadDownWasReleased()) {
-            targetVelocity -= 25;
+            targetVelocity -= 20;
         }
         if (gamepad1.dpadRightWasReleased()) {
-            hoodAngle -= 0.05;
+            hoodAngle -= 0.025;
             shooter.setHood(hoodAngle);
         }
         if (gamepad1.dpadLeftWasReleased()) {
-            hoodAngle += 0.05;
+            hoodAngle += 0.025;
+            shooter.setHood(hoodAngle);
+        }
+
+        if (gamepad1.right_stick_button) {
+            targetVelocity = Shooter.getCoefficientsFromDistance(Localization.getRedDistance())[1];
+            hoodAngle = Shooter.getCoefficientsFromDistance(Localization.getRedDistance())[0];
             shooter.setHood(hoodAngle);
         }
 
         velocity1 = sh.getVelocity();
         velocity2 = sh2.getVelocity();
-        sh.setPower(controller1.calculate(targetVelocity - velocity1, targetVelocity, 0.0));
-        sh2.setPower(controller2.calculate(targetVelocity - velocity2, targetVelocity, 0.0));
+        if (sh.getVelocity() > targetVelocity) {
+            sh.setPower(0);
+            sh2.setPower(0);
+        }
+        else if (sh.getVelocity() < targetVelocity) {
+            sh.setPower(1);
+            sh2.setPower(1);
+        }
+        else {
+            sh.setPower(0);
+            sh2.setPower(0);
+        }
+//        sh.setPower(controller1.calculate(targetVelocity - velocity1, targetVelocity, 0.0));
+//        sh2.setPower(controller2.calculate(targetVelocity - velocity2, targetVelocity, 0.0));
 
 
         telemetry.addData("Target Speed:", targetVelocity);
         telemetry.addData("Hood Angle:", hoodAngle);
         telemetry.addData("Distance:", getRedDistance());
         telemetryM.addData("Target Speed:", speed);
+        telemetryM.addData(" Speed:", sh.getVelocity());
         telemetryM.addData("Hood Angle:", hoodAngle);
         telemetryM.addData("Distance:", getRedDistance());
 
-        turret.periodic();
         Localization.update();
+        turret.periodic();
         telemetry.update();
         telemetryM.update();
     }

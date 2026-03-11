@@ -78,8 +78,8 @@ public class RedTeleop extends CommandOpMode {
         intake = new Intake(hardwareMap, telemetry);
         Localization.init(follower, telemetry);
         turret.isAutoCode = false;
-//        turret.resetTurretEncoder();
-        intake.setStopper(0.45);
+        turret.resetTurretEncoder();
+//        intake.setStopper(0.45);
         shooter.setAutoShoot(true);
         turret.setAutoAim(true);
 

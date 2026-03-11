@@ -35,9 +35,9 @@ public class Turret extends SubsystemBase {
     private static final double HEADING_LEAD_SEC = 0.12;
 
     private static final double VISION_DEADBAND_RAD = Math.toRadians(2.0);
-    public static double kP = 0.02;
+    public static double kP = 0.07;
     public static double kI = 0.0;
-    public static double kD = 0.0007;
+    public static double kD = 0.0001;
     public static double kF = 0.0002;
     public boolean isAutoCode = false;
     // PIDF (tune these)
@@ -96,7 +96,6 @@ public class Turret extends SubsystemBase {
         if (!autoAimEnabled) return;
 
         double robotHeading = Localization.getHeading();
-        double omega = Localization.getHeadingVelocity();
         double robotHeadingPred = normalizeRadians(robotHeading);
 
         double turretRelHeading = posToHeading(getPos());

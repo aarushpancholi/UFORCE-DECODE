@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.globals;
 
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.blueGoalPose;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redDistancePose;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redGoalPose;
 
 import com.bylazar.telemetry.TelemetryManager;
@@ -30,21 +31,9 @@ public class Localization {
     }
 
     public static void update() {
-        double dt = timer.seconds();
-        timer.reset();
-
-        follower.update();
-        double h = follower.getHeading();
-        telemetry.addData("dt", dt);
-
-        if (dt > 1e-3) {
-            double dh = AngleUnit.normalizeRadians(h - lastHeading);
-            double rawVel = dh / dt;
-            headingVel = (1.0 - VEL_ALPHA) * headingVel + VEL_ALPHA * rawVel;
-            telemetry.addData("dh", dh);
-        }
-
-        lastHeading = h;
+            follower.update();
+            headingVel = follower.getAngularVelocity(); // rad/s, no extra lag
+            lastHeading = follower.getHeading();
     }
 
     public static void updateNoFollower() {
@@ -81,11 +70,11 @@ public class Localization {
     }
 
     public static double getRedDistance() {
-        return follower.getPose().distanceFrom(redGoalPose);
+        return follower.getPose().distanceFrom(redDistancePose);
     }
 
     public static double getRedDistance(Pose loc) {
-        return loc.distanceFrom(redGoalPose);
+        return loc.distanceFrom(redDistancePose);
     }
 
     public static double getBlueDistance() {

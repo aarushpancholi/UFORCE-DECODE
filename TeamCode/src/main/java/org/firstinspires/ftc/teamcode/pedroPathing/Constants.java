@@ -16,20 +16,18 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(13.3)
-            .forwardZeroPowerAcceleration(-43.8455382204)
-            .lateralZeroPowerAcceleration(-72.4184318864)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.02, 0.05))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.03, 0.02))
-            .headingPIDFCoefficients(new PIDFCoefficients(0.7, 0, 0.01, 0.03))
-            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.05, 0.01))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(1, 0, 0.00005, 0.6, 0.02))
-            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.00005, 0.6, 0.02))
-            .useSecondaryDrivePIDF(true)
-            .useSecondaryTranslationalPIDF(true)
-            .useSecondaryHeadingPIDF(true)
+            .mass(13)
+            .forwardZeroPowerAcceleration(-44)
+            .lateralZeroPowerAcceleration(-67)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.04, 0, 0.003, 0.02))
+//            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.03, 0.02))
+            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.08, 0.02))
+//            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.05, 0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.025, 0, 0.0007, 0.6, 0.02))
+//            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.00005, 0.6, 0.02))
+//            .useSecondaryDrivePIDF(true)
+//            .useSecondaryHeadingPIDF(true)
             .centripetalScaling(0.0005);
-
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
@@ -51,8 +49,9 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .xVelocity(76.527680805)
-            .yVelocity(59.0276965044);
+            .xVelocity(80)
+            .yVelocity(53.2);
+    ;
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)

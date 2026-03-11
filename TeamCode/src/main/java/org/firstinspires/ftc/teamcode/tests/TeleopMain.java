@@ -50,7 +50,7 @@ import org.firstinspires.ftc.teamcode.vision.AprilTagTracking;
 
 import java.util.function.BooleanSupplier;
 
-@Disabled
+//@Disabled
 @Configurable
 @TeleOp(name = "TeleopMain Test", group = "TeleOp")
 public class TeleopMain extends CommandOpMode {
@@ -70,16 +70,16 @@ public class TeleopMain extends CommandOpMode {
         shooter = new Shooter(hardwareMap, telemetry, false);
         turret = new Turret(hardwareMap, telemetry);
         follower = createFollower(hardwareMap);
-        follower.setPose(savedPose != null ? savedPose : new Pose(84.437,20,Math.toRadians(90)));
+        follower.setPose(new Pose(135,0,Math.toRadians(90)));
         telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         follower.startTeleOpDrive(true);
         intake = new Intake(hardwareMap, telemetry);
         vision = new AprilTagTracking(hardwareMap);
         Localization.init(follower, telemetry);
-//        turret.resetTurretEncoder();
+        turret.resetTurretEncoder();
         intake.setStopper(0.45);
         shooter.setAutoShoot(true);
-//        turret.setAutoAim(true);
+        turret.setAutoAim(true);
 
         super.register(turret);
         super.register(shooter);
@@ -88,35 +88,35 @@ public class TeleopMain extends CommandOpMode {
         GamepadEx driverOp = new GamepadEx(gamepad1);
         GamepadEx toolOp = new GamepadEx(gamepad2);
 
-        driverOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
-                        .whileHeld(
-                                new FollowPathCommand(follower, follower.pathBuilder()
-                                        .addPath(new BezierCurve(
-                                                follower.getPose(),
-                                                redRampCP,
-                                                intakeRedRamp
-                                        ))
-                                        .setLinearHeadingInterpolation(follower.getHeading(), intakeRedRamp.getHeading())
-                                        .build())
-                        )
-                .whenReleased(
-                            new InstantCommand(() -> follower.startTeleOpDrive(true) )
-
-                );
-
-        driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
-                .whileHeld(
-                        new FollowPathCommand(follower, follower.pathBuilder()
-                                .addPath(new BezierLine(
-                                        follower.getPose(),
-                                        redPark
-                                ))
-                                .setLinearHeadingInterpolation(follower.getHeading(), redPark.getHeading())
-                                .build())
-                )
-                        .whenReleased(
-                                new InstantCommand(() -> follower.startTeleOpDrive(true) )
-                        );
+//        driverOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
+//                        .whileHeld(
+//                                new FollowPathCommand(follower, follower.pathBuilder()
+//                                        .addPath(new BezierCurve(
+//                                                follower.getPose(),
+//                                                redRampCP,
+//                                                intakeRedRamp
+//                                        ))
+//                                        .setLinearHeadingInterpolation(follower.getHeading(), intakeRedRamp.getHeading())
+//                                        .build())
+//                        )
+//                .whenReleased(
+//                            new InstantCommand(() -> follower.startTeleOpDrive(true) )
+//
+//                );
+//
+//        driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
+//                .whileHeld(
+//                        new FollowPathCommand(follower, follower.pathBuilder()
+//                                .addPath(new BezierLine(
+//                                        follower.getPose(),
+//                                        redPark
+//                                ))
+//                                .setLinearHeadingInterpolation(follower.getHeading(), redPark.getHeading())
+//                                .build())
+//                )
+//                        .whenReleased(
+//                                new InstantCommand(() -> follower.startTeleOpDrive(true) )
+//                        );
 
         driverOp.getGamepadButton(GamepadKeys.Button.A)
                         .whileHeld(
@@ -127,13 +127,13 @@ public class TeleopMain extends CommandOpMode {
                         )
                 );
 
-        toolOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
+        driverOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenPressed(new autoIntakeCommand(intake))
                 .whenReleased(
                         new InstantCommand(intake::intakeOff).alongWith(new InstantCommand(intake::intakeReset))
                 );
 
-        toolOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
+        driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
                 .whenPressed(
                         new SequentialCommandGroup(
                                 new transfer(intake, true),
