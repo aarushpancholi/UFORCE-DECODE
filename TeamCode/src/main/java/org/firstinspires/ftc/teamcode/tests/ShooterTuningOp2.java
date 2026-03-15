@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import static org.firstinspires.ftc.teamcode.globals.Localization.getHeading;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getRedDistance;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redGoalPose;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
@@ -28,6 +30,7 @@ public class ShooterTuningOp2 extends OpMode {
     public static double targetVelocity, velocity1, velocity2;
     public static double P,I,kV,kS;
 
+    private boolean newShooter = false;
     private Turret turret;
     private Follower follower;
     private Shooter shooter;
@@ -35,7 +38,7 @@ public class ShooterTuningOp2 extends OpMode {
 
     private int speed = 0;
     private boolean autoAim = false;
-    private double hoodAngle = 0.7;
+    private double hoodPos = 0.7;
 
     public void init() {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -53,6 +56,7 @@ public class ShooterTuningOp2 extends OpMode {
         turret = new Turret(hardwareMap, telemetryM);
         turret.resetTurretEncoder();
         intake = new Intake(hardwareMap, telemetryM);
+        intake.setStopper(0.45);
         follower = createFollower(hardwareMap);
         follower.setStartingPose(new Pose(135,9,Math.toRadians(90)));
         Localization.init(follower, telemetryM);
@@ -63,7 +67,7 @@ public class ShooterTuningOp2 extends OpMode {
 
     public void start() {
         follower.startTeleOpDrive();
-        shooter.setHood(hoodAngle);
+        shooter.setHood(hoodPos);
         controller1.setPID(P,I, 0.0);
         controller1.setFeedforward(kV, 0.0, kS);
         controller2.setPID(P,I, 0.0);
@@ -72,6 +76,10 @@ public class ShooterTuningOp2 extends OpMode {
 
     @Override
     public void loop() {
+        double shotDistance = follower.getPose().distanceFrom(redGoalPose);
+        double actualShotSpeed = Math.abs(0.5 * (sh.getVelocity() - sh2.getVelocity()));
+        double compensatedHoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, actualShotSpeed);
+
         follower.setTeleOpDrive(
                 -gamepad1.left_stick_y,
                 -gamepad1.left_stick_x,
@@ -79,8 +87,24 @@ public class ShooterTuningOp2 extends OpMode {
                 true
         );
         if (gamepad1.a) {
+            hoodPos = compensatedHoodPos;
+            shooter.setHood(hoodPos);
             intake.intake1On();
             intake.intake2On();
+        }
+        if (gamepad1.right_bumper) {
+            intake.setStopper(0.3);
+            double farExtraInches = Math.max(0, getRedDistance() - 110);
+            if(farExtraInches > 0) {
+                intake.onSpeed(0.7);
+            }
+            else {
+                intake.intake1On();
+            }
+        }
+        if (gamepad1.rightBumperWasReleased()) {
+            intake.setStopper(0.45);
+            intake.intakeOff();
         }
         if (gamepad1.b) {
             intake.intake2Off();
@@ -96,7 +120,7 @@ public class ShooterTuningOp2 extends OpMode {
             follower.startTeleOpDrive();
         }
 
-        if (gamepad1.right_bumper) {
+        if (gamepad1.left_stick_button) {
             turret.setAutoAim(!autoAim);
         }
         if(gamepad1.dpadUpWasReleased()) {
@@ -106,19 +130,29 @@ public class ShooterTuningOp2 extends OpMode {
             targetVelocity -= 20;
         }
         if (gamepad1.dpadRightWasReleased()) {
-            hoodAngle -= 0.025;
-            shooter.setHood(hoodAngle);
+            hoodPos -= 0.025;
+            shooter.setHood(hoodPos);
         }
         if (gamepad1.dpadLeftWasReleased()) {
-            hoodAngle += 0.025;
-            shooter.setHood(hoodAngle);
+            hoodPos += 0.025;
+            shooter.setHood(hoodPos);
         }
 
-        if (gamepad1.right_stick_button) {
-            targetVelocity = Shooter.getCoefficientsFromDistance(Localization.getRedDistance())[1];
-            hoodAngle = Shooter.getCoefficientsFromDistance(Localization.getRedDistance())[0];
-            shooter.setHood(hoodAngle);
+        if (gamepad1.rightStickButtonWasReleased()) {
+            newShooter = !newShooter;
         }
+
+        if (newShooter) {
+            double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
+            targetVelocity = coefficients[1];
+            if (Math.abs(actualShotSpeed - targetVelocity) > 40) {
+                hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
+            } else {
+                hoodPos = coefficients[0];
+            }
+            shooter.setHood(hoodPos);
+        }
+
 
         velocity1 = sh.getVelocity();
         velocity2 = sh2.getVelocity();
@@ -139,15 +173,27 @@ public class ShooterTuningOp2 extends OpMode {
 
 
         telemetry.addData("Target Speed:", targetVelocity);
-        telemetry.addData("Hood Angle:", hoodAngle);
-        telemetry.addData("Distance:", getRedDistance());
+        telemetry.addData("Actual Shot Speed:", actualShotSpeed);
+        telemetry.addData("Hood Pos:", hoodPos);
+        telemetry.addData("Hood Angle (deg):", Shooter.getHoodAngleFromPos(hoodPos));
+        telemetry.addData("Comp Hood Angle (deg):", Shooter.getHoodAngleFromPos(compensatedHoodPos));
+        telemetry.addData("Distance (goal):", shotDistance);
+        telemetry.addData("Distance (redDistancePose):", getRedDistance());
         telemetryM.addData("Target Speed:", speed);
+        telemetryM.addData("heading", getHeading());
+        telemetryM.addData("intake voltage", intake.voltage);
+        telemetryM.addData("Robot pos", follower.getPose());
         telemetryM.addData(" Speed:", sh.getVelocity());
-        telemetryM.addData("Hood Angle:", hoodAngle);
-        telemetryM.addData("Distance:", getRedDistance());
+        telemetryM.addData("Actual Shot Speed:", actualShotSpeed);
+        telemetryM.addData("Hood Pos:", hoodPos);
+        telemetryM.addData("Hood Angle:", (hoodPos));
+        telemetryM.addData("Comp Hood Angle:", (compensatedHoodPos));
+        telemetryM.addData("Distance (goal):", shotDistance);
+        telemetryM.addData("Distance (redDistancePose):", getRedDistance());
 
         Localization.update();
         turret.periodic();
+        intake.periodic();
         telemetry.update();
         telemetryM.update();
     }

@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.globals.Localization.getGoalDistanc
 import static org.firstinspires.ftc.teamcode.globals.Localization.getRedDistance;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.chosenAlliance;
 import static org.firstinspires.ftc.teamcode.subsystems.Shooter.angleFromDistance;
+import static org.firstinspires.ftc.teamcode.subsystems.Shooter.getCoefficientsFromDistance;
 import static org.firstinspires.ftc.teamcode.subsystems.Shooter.speedFromDistance;
 
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -238,7 +239,7 @@ public class RedNearSide18BallsAuto extends CommandOpMode {
 
         intake.setStopper(0.45);
         turret.resetTurretEncoder();
-        turret.isAutoCode = true;
+//        turret.isAutoCode = true;
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -247,8 +248,6 @@ public class RedNearSide18BallsAuto extends CommandOpMode {
         Localization.init(follower, telemetryM);
 
         SequentialCommandGroup shooterSequence = new SequentialCommandGroup(
-                new WaitCommand(300),
-                new isAimed(turret).withTimeout(400),
                 new transfer(intake, true)
                         .alongWith(new InstantCommand(() -> intake.intake2On())),
                 new WaitCommand(600)
@@ -258,7 +257,7 @@ public class RedNearSide18BallsAuto extends CommandOpMode {
                 new turretAutoAim(turret, true),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, path1),
-                        new setShooter(shooter, (int) speedFromDistance(getGoalDistance(p4End, chosenAlliance)), angleFromDistance(getGoalDistance(p1End, chosenAlliance))),
+                        new setShooter(shooter, (int) getCoefficientsFromDistance(getGoalDistance(p1End, chosenAlliance))[1], getCoefficientsFromDistance(getGoalDistance(p1End, chosenAlliance))[0]),
                         new intakeOn1Command(intake)
                 ),
                 shooterSequence,

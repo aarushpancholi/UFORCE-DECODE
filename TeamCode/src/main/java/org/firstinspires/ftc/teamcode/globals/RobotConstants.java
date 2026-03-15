@@ -6,8 +6,8 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 public class RobotConstants {
-    public static double maxTurretPos = 336;
-    public static double minTurretPos = 0;
+    public static double maxTurretPos = 168;
+    public static double minTurretPos = -168;
 
     public MotorEx frontRight;
     public MotorEx frontLeft;
@@ -28,13 +28,15 @@ public class RobotConstants {
 
     public static int maxEPT = 1900;
 
-    public static double maxHoodPos = 1;
-    public static double minHoodPos = 0.625;
+    // Calibrated hood map: 35deg -> 0.625, 65deg -> 1.0
+    public static double maxHoodPos = 0.625;
+    public static double minHoodPos = 1;
     public static double maxHoodAngle = 35;
     public static double minHoodAngle = 65;
 
     public static Pose blueGoalPose = new Pose(6, 141, Math.toRadians(90));
-    public static Pose redGoalPose  = new Pose(141, 141, Math.toRadians(90));
+    public static Pose redGoalPose  = new Pose(139, 140, Math.toRadians(90));
+    public static Pose farRedGoalPose = new Pose(133, 140);
 
     public static Pose redDistancePose = new Pose(138, 138, Math.toRadians(90));
 

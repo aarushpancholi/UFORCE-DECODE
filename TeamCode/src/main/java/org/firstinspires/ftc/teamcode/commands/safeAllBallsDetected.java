@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode.commands;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
-public class allBallsDetected extends CommandBase {
+public class safeAllBallsDetected extends CommandBase {
 
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final Intake intakeSubsystem;
 
 
-    public allBallsDetected(Intake subsystem) {
+    public safeAllBallsDetected(Intake subsystem) {
         intakeSubsystem = subsystem;
         // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(subsystem);
@@ -21,6 +21,6 @@ public class allBallsDetected extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return (intakeSubsystem.triggered);
+        return ((intakeSubsystem.voltage > 5) && intakeSubsystem.isBallDetected01() && intakeSubsystem.isBallDetected02() && intakeSubsystem.isBallDetected03());
     }
 }

@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.globals;
 
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.blueGoalPose;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.farRedGoalPose;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redDistancePose;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redGoalPose;
 
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -65,6 +67,10 @@ public class Localization {
         return follower.getPose().getX();
     }
 
+    public static Vector getVelocity() { return follower.getVelocity();}
+
+    public static Pose getPose() {return follower.getPose();}
+
     public static double getZLateral() {
         return follower.getPose().getY();
     }
@@ -93,7 +99,12 @@ public class Localization {
 
     public static double getRedHeadingDiff(double turretAbsHeading) {
         Pose robot = follower.getPose();
-        double goalBearing = redGoalPose.minus(robot).getAsVector().getTheta();
+        double goalBearing;
+        if (getRedDistance() > 100) {
+            goalBearing = farRedGoalPose.minus(robot).getAsVector().getTheta();
+        } else {
+            goalBearing = redGoalPose.minus(robot).getAsVector().getTheta();
+        }
         return AngleUnit.normalizeRadians(goalBearing - turretAbsHeading);
     }
 

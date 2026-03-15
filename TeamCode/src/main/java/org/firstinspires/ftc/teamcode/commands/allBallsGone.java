@@ -27,6 +27,6 @@ public class allBallsGone extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return empty;
+        return intakeSubsystem.voltage < 1.4;
     }
 }

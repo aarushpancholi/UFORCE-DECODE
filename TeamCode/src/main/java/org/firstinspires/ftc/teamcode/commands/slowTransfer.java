@@ -4,14 +4,14 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
-public class transfer extends CommandBase {
+public class slowTransfer extends CommandBase {
     boolean on = false;
 
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final Intake intakeSubsystem;
 
 
-    public transfer(Intake subsystem, boolean on) {
+    public slowTransfer(Intake subsystem, boolean on) {
         intakeSubsystem = subsystem;
         this.on = on;
         // Use addRequirements() here to declare subsystem dependencies.
@@ -21,12 +21,16 @@ public class transfer extends CommandBase {
     @Override
     public void initialize() {
         if (on) {
+            intakeSubsystem.intake2On();
             intakeSubsystem.setStopper(0.35);
             intakeSubsystem.shooting = true;
+            intakeSubsystem.active = false;
             intakeSubsystem.triggered = false;
         }
         else {
             intakeSubsystem.setStopper(0.5);
+            intakeSubsystem.intakeOff();
+            intakeSubsystem.active = true;
             intakeSubsystem.shooting = false;
         }
     }

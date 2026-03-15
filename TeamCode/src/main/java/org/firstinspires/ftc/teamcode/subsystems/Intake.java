@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -10,6 +11,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
+@Configurable
 public class Intake extends SubsystemBase {
 
     private final AnalogInput s1;
@@ -27,6 +31,12 @@ public class Intake extends SubsystemBase {
     private boolean s1Detected = false;
     private boolean s2Detected = false;
     private boolean s3Detected = false;
+
+    public double voltage;
+    public boolean auto = false;
+    public boolean triggered = false;
+    public boolean shooting = false;
+    public boolean active = true;
 
     private boolean all3 = false;
 
@@ -54,10 +64,24 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
+        voltage = intakeMotor.getCurrent(CurrentUnit.AMPS);
+
+        if (voltage > 6 && !shooting && active)  {
+            intakeMotor.setPower(0);
+            triggered = true;
+        }
+
+        if (auto && voltage <= 6 && !triggered) {
+            intakeMotor.setPower(1);
+        }
     }
 
     public void setStopper(double pos) {
         stopper.set(pos);
+    }
+
+    public void onSpeed(double speed) {
+        intakeMotor.setPower(speed);
     }
 
     public double getStopper() {
@@ -84,7 +108,7 @@ public class Intake extends SubsystemBase {
     public void intake2On() {
 //        servoA.setPower(1.0);
 //        servoB.setPower(1.0);
-        intakeMotor.setPower(1.0);
+        intakeMotor.setPower(1);
 
     }
 

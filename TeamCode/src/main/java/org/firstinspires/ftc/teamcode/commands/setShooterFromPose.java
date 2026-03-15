@@ -1,22 +1,27 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import static org.firstinspires.ftc.teamcode.globals.Localization.getGoalDistance;
+import static org.firstinspires.ftc.teamcode.subsystems.Shooter.getCoefficientsFromDistance;
+
+import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-public class setShooter extends CommandBase {
+public class setShooterFromPose extends CommandBase {
 
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final Shooter shooterSubsystem;
-    private int target = 0;
+    private double target = 0;
     private double pos = 0.0;
 
 
-    public setShooter(Shooter subsystem, int target, double pos) {
+    public setShooterFromPose(Shooter subsystem, Pose pose, String alliance) {
         shooterSubsystem = subsystem;
-        this.target = target;
-        this.pos = pos;
+        double[] coefficients = getCoefficientsFromDistance(getGoalDistance(pose, alliance));
+        this.target = coefficients[1];
+        this.pos = coefficients[0];
         // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(subsystem);
     }
@@ -30,7 +35,6 @@ public class setShooter extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double actualShotSpeed = Math.abs(0.5 * (shooterSubsystem.getVelA() - shooterSubsystem.getVelB()));
-        return (target - 10 <= actualShotSpeed) && (actualShotSpeed <= target + 10);
+        return true;
     }
 }

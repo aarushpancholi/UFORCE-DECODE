@@ -5,10 +5,13 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.norm
 import static org.firstinspires.ftc.teamcode.globals.Localization.getGoalHeadingDiff;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getRedHeadingDiff;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.chosenAlliance;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.blueGoalPose;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.maxTurretPos;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.minTurretPos;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redGoalPose;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.math.Vector;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
@@ -31,8 +34,10 @@ public class Turret extends SubsystemBase {
 
     private static final double MIN_TURRET_RAD = Math.toRadians(-135);
     private static final double MAX_TURRET_RAD = Math.toRadians(135);
+    private static final double INCHES_TO_METERS = 0.0254;
 
     private static final double HEADING_LEAD_SEC = 0.12;
+    public static double maxVelocityLeadDeg = 20.0;
 
     private static final double VISION_DEADBAND_RAD = Math.toRadians(2.0);
     public static double kP = 0.07;
@@ -103,19 +108,8 @@ public class Turret extends SubsystemBase {
 
         double localErr = getGoalHeadingDiff(turretAbsHeading, chosenAlliance);
 
-        OptionalDouble visionErrOpt = vision.getYawErrorRadToGoal(chosenAlliance);
-
-        // If tag visible -> use ONLY limelight error
-        // Else -> use localization
-        double aimErr;
-        if (visionErrOpt.isPresent()) {
-            double visionErr = visionErrOpt.getAsDouble();
-            aimErr = (Math.abs(visionErr) <= VISION_DEADBAND_RAD) ? 0.0 : visionErr;
-        } else {
-            aimErr = localErr;
-        }
-
-        double targetAbsHeading = normalizeRadians(turretAbsHeading + aimErr);
+        double velocityLeadRad = getVelocityLeadRad();
+        double targetAbsHeading = normalizeRadians(turretAbsHeading + localErr + velocityLeadRad);
 
         double relToTarget = targetAbsHeading - robotHeadingPred;
         double chosenRel = chooseTurretRelHeading(relToTarget, turretRelHeading);
@@ -141,6 +135,36 @@ public class Turret extends SubsystemBase {
 //
 //
         turret.set(power);
+    }
+
+    private double getVelocityLeadRad() {
+        double goalDistanceInches = Localization.getGoalDistance(chosenAlliance);
+        double[] shooterCoefficients = Shooter.getCoefficientsFromDistance(goalDistanceInches);
+
+        double hoodPos = shooterCoefficients[0];
+        double shooterTicksPerSec = shooterCoefficients[1];
+        double hoodAngleRad = Math.toRadians(Shooter.getHoodAngleFromPos(hoodPos));
+        double shooterSpeedMps = Shooter.getShooterSpeedFromTicks(shooterTicksPerSec);
+
+        Vector robotToGoal = (chosenAlliance.equals("BLUE") ? blueGoalPose : redGoalPose)
+                .minus(Localization.getPose())
+                .getAsVector();
+        Vector robotVelocity = Localization.getVelocity();
+
+        double coordinateTheta = robotVelocity.getTheta() - robotToGoal.getTheta();
+        double robotSpeedMps = robotVelocity.getMagnitude() * INCHES_TO_METERS;
+        double parallelComponent = -Math.cos(coordinateTheta) * robotSpeedMps;
+        double perpendicularComponent = Math.sin(coordinateTheta) * robotSpeedMps;
+
+        double vxc = shooterSpeedMps * Math.cos(hoodAngleRad) + parallelComponent;
+        if (Math.abs(vxc) <= 1e-6) {
+            return 0.0;
+        }
+
+        // Sign is inverted so turret leads in the physical/camera frame correctly.
+        double leadRad = -Math.atan2(perpendicularComponent, vxc);
+        double maxLeadRad = Math.toRadians(maxVelocityLeadDeg);
+        return Range.clip(leadRad, -maxLeadRad, maxLeadRad);
     }
 
     public boolean isAimed() {
