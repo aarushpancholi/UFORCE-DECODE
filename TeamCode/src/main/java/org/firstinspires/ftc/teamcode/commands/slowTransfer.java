@@ -21,17 +21,9 @@ public class slowTransfer extends CommandBase {
     @Override
     public void initialize() {
         if (on) {
-            intakeSubsystem.intake2On();
-            intakeSubsystem.setStopper(0.35);
-            intakeSubsystem.shooting = true;
-            intakeSubsystem.active = false;
-            intakeSubsystem.triggered = false;
-        }
-        else {
-            intakeSubsystem.setStopper(0.5);
-            intakeSubsystem.intakeOff();
-            intakeSubsystem.active = true;
-            intakeSubsystem.shooting = false;
+            intakeSubsystem.startSlowTransfer();
+        } else {
+            intakeSubsystem.stopSlowTransfer();
         }
     }
 

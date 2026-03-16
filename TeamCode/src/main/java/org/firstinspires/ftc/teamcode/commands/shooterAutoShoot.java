@@ -9,13 +9,19 @@ public class shooterAutoShoot extends CommandBase {
 
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final Shooter shooterSubsystem;
+    private final Boolean autoShoot;
 
 
     public shooterAutoShoot(Shooter subsystem, Boolean autoShoot) {
         shooterSubsystem = subsystem;
-        shooterSubsystem.setAutoShoot(autoShoot);
+        this.autoShoot = autoShoot;
         // Use addRequirements() here to declare subsystem dependencies.
         addRequirements(subsystem);
+    }
+
+    @Override
+    public void initialize() {
+        shooterSubsystem.setAutoShoot(autoShoot);
     }
 
     @Override

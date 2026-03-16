@@ -21,6 +21,6 @@ public class allBallsDetected extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return (intakeSubsystem.triggered);
+        return intakeSubsystem.hasTriggeredStop();
     }
 }

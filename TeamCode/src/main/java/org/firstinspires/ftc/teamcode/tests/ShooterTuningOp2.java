@@ -181,7 +181,7 @@ public class ShooterTuningOp2 extends OpMode {
         telemetry.addData("Distance (redDistancePose):", getRedDistance());
         telemetryM.addData("Target Speed:", speed);
         telemetryM.addData("heading", getHeading());
-        telemetryM.addData("intake voltage", intake.voltage);
+        telemetryM.addData("intake current", intake.getCurrent());
         telemetryM.addData("Robot pos", follower.getPose());
         telemetryM.addData(" Speed:", sh.getVelocity());
         telemetryM.addData("Actual Shot Speed:", actualShotSpeed);

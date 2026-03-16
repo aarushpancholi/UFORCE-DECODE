@@ -21,13 +21,9 @@ public class transfer extends CommandBase {
     @Override
     public void initialize() {
         if (on) {
-            intakeSubsystem.setStopper(0.35);
-            intakeSubsystem.shooting = true;
-            intakeSubsystem.triggered = false;
-        }
-        else {
-            intakeSubsystem.setStopper(0.5);
-            intakeSubsystem.shooting = false;
+            intakeSubsystem.startTransfer();
+        } else {
+            intakeSubsystem.stopTransfer();
         }
     }
 
@@ -37,7 +33,7 @@ public class transfer extends CommandBase {
             return (intakeSubsystem.getStopper() == 0.35);
         }
         else {
-            return (intakeSubsystem.getStopper() == 0.5);
+            return (intakeSubsystem.getStopper() == 0.45);
         }
 
     }

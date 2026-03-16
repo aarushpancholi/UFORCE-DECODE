@@ -2,11 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
@@ -15,28 +12,26 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 @Configurable
 public class Intake extends SubsystemBase {
+    private static final double AUTO_STOP_CURRENT_AMPS = 5.0;
+    private static final double DEFAULT_INTAKE_POWER = 1.0;
+    private static final double SLOW_TRANSFER_POWER = 0.45;
+    private static final double STOPPER_SHOOT_POS = 0.35;
+    private static final double STOPPER_HOLD_POS = 0.45;
 
     private final AnalogInput s1;
     private final AnalogInput s2;
     private final AnalogInput s3;
 
     private final DcMotorEx intakeMotor;
-    private final CRServo servoA;
-
-    private final CRServo servoB;
     private final ServoEx stopper;
 
     private final TelemetryManager telemetry;
 
-    private boolean s1Detected = false;
-    private boolean s2Detected = false;
-    private boolean s3Detected = false;
-
-    public double voltage;
-    public boolean auto = false;
-    public boolean triggered = false;
-    public boolean shooting = false;
-    public boolean active = true;
+    private double current;
+    private boolean autoEnabled = false;
+    private boolean triggered = false;
+    private boolean shooting = false;
+    private boolean currentStopEnabled = true;
 
     private boolean all3 = false;
 
@@ -51,29 +46,30 @@ public class Intake extends SubsystemBase {
 
         stopper = new ServoEx(hardwareMap, "stopper");
 
-        servoA = hardwareMap.get(CRServo.class, "sA");
-        servoB = hardwareMap.get(CRServo.class, "sB");
-
-
-        servoA.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        servoB.setDirection(DcMotorSimple.Direction.FORWARD);
-
         telemetry = telemetryManager;
     }
 
     @Override
     public void periodic() {
-        voltage = intakeMotor.getCurrent(CurrentUnit.AMPS);
+        current = intakeMotor.getCurrent(CurrentUnit.AMPS);
 
-        if (voltage > 6 && !shooting && active)  {
-            intakeMotor.setPower(0);
+        if (shouldStopForCurrent()) {
+            intakeOff();
             triggered = true;
+            return;
         }
 
-        if (auto && voltage <= 6 && !triggered) {
-            intakeMotor.setPower(1);
+        if (shouldAutoRun()) {
+                intakeMotor.setPower(1);
         }
+    }
+
+    private boolean shouldStopForCurrent() {
+        return currentStopEnabled && !shooting && current > AUTO_STOP_CURRENT_AMPS && areAllBallsDetected();
+    }
+
+    private boolean shouldAutoRun() {
+        return autoEnabled && !triggered && current <= AUTO_STOP_CURRENT_AMPS;
     }
 
     public void setStopper(double pos) {
@@ -90,33 +86,22 @@ public class Intake extends SubsystemBase {
 
     public void intakeOff() {
         intakeMotor.setPower(0.0);
-//        servoA.setPower(0.0);
-//        servoB.setPower(0.0);
     }
 
     public void intake1On() {
-        intakeMotor.setPower(1.0);
+        intakeMotor.setPower(DEFAULT_INTAKE_POWER);
     }
 
     public void intakeOpposite() {
         intakeMotor.setPower(-1.0);
-//        servoA.setPower(-1.0);
-//        servoB.setPower(-1.0);
-
     }
 
     public void intake2On() {
-//        servoA.setPower(1.0);
-//        servoB.setPower(1.0);
-        intakeMotor.setPower(1);
-
+        intake1On();
     }
 
 
     public void intake2Off() {
-//        servoA.setPower(0.0);
-//        servoB.setPower(0.0);
-//        intakeMotor.setPower(1.0);
     }
 
     public boolean isBallDetected01() {
@@ -172,11 +157,10 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean isIntake2On() {
-        return intakeMotor.getPower() > 0.4; // assumes both are driven the same
+        return intakeMotor.getPower() > 0.4;
     }
 
     public boolean isIntakeOff() {
-//        return intakeMotor.getPower() < 0.1 && Math.abs(servoA.getPower()) < 0.1 && Math.abs(servoB.getPower()) < 0.1;
         return intakeMotor.getPower() < 0.1;
     }
 
@@ -187,22 +171,52 @@ public class Intake extends SubsystemBase {
     public void autoIntake() {
         if (!all3) {
 
-            if (areAllBallsDetected()) {
+            if ((areAllBallsDetected() && getCurrent() > 6)) {
                 intakeOff();
                 all3 = true;
                 return;
             }
 
-            if (isBallDetected03()) {
-                intakeMotor.setPower(1.0);   // Intake1 ON
-                servoA.setPower(0.0);        // Intake2 OFF
-                servoB.setPower(0.0);        // Intake2 OFF
-                return;
-            }
-
-            intakeMotor.setPower(1.0);       // Intake1 ON
-            servoA.setPower(1.0);            // Intake2 ON
-            servoB.setPower(1.0);
+            intake1On();
         }
+    }
+
+    public double getCurrent() {
+        return current;
+    }
+
+    public boolean hasTriggeredStop() {
+        return triggered;
+    }
+
+    public void setAutoEnabled(boolean enabled) {
+        autoEnabled = enabled;
+    }
+
+    public void setCurrentStopEnabled(boolean enabled) {
+        currentStopEnabled = enabled;
+    }
+
+    public void startTransfer() {
+        setStopper(STOPPER_SHOOT_POS);
+        shooting = true;
+        triggered = false;
+    }
+
+    public void stopTransfer() {
+        setStopper(STOPPER_HOLD_POS);
+        shooting = false;
+        currentStopEnabled = true;
+    }
+
+    public void startSlowTransfer() {
+        startTransfer();
+        currentStopEnabled = false;
+        onSpeed(SLOW_TRANSFER_POWER);
+    }
+
+    public void stopSlowTransfer() {
+        stopTransfer();
+        intakeOff();
     }
 }

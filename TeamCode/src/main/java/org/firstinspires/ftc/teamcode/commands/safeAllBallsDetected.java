@@ -21,6 +21,9 @@ public class safeAllBallsDetected extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return ((intakeSubsystem.voltage > 5) && intakeSubsystem.isBallDetected01() && intakeSubsystem.isBallDetected02() && intakeSubsystem.isBallDetected03());
+        return intakeSubsystem.getCurrent() > 5
+                && intakeSubsystem.isBallDetected01()
+                && intakeSubsystem.isBallDetected02()
+                && intakeSubsystem.isBallDetected03();
     }
 }

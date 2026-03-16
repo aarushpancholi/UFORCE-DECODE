@@ -69,7 +69,7 @@ public class Turret extends SubsystemBase {
     }
 
     public void straight() {
-        setTargetTicks(168);
+        setTargetTicks(0);
     }
 
     public boolean isStraight() {

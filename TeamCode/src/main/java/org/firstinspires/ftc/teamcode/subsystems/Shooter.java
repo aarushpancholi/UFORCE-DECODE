@@ -41,7 +41,6 @@ import fi.iki.elonen.NanoHTTPD;
 
 public class Shooter extends SubsystemBase {
 
-    private PIDFController controller1, controller2;
     private TelemetryManager telemetry;
     private boolean autoShoot = false;
     private double pos = 0.5;
@@ -62,6 +61,8 @@ public class Shooter extends SubsystemBase {
     public static double farLowAngleStartInches = 110.0;
     public static double farLowAngleBlendInches = 25.0;
     public static double farLowAngleTargetDeg = 35.0;
+    // Hold flywheel speed with feedforward + small trim instead of 0/1 bang-bang power.
+    public static double shooterPowerKp = 0.00045;
     private static boolean isAuto;
 
     private static InterpLUT distSpeed = new InterpLUT();
@@ -79,10 +80,6 @@ public class Shooter extends SubsystemBase {
         P = 1.3;
         kS = 0.06;
         kV = 0.00039;
-        controller1 = new org.firstinspires.ftc.teamcode.util.PIDFController(P,I,0.0, 0);
-        controller2 = new org.firstinspires.ftc.teamcode.util.PIDFController(P,I,0.0, 0);
-
-
 //        distSpeed.add(15.48, 1000);
 //        distSpeed.add(35.20, 1125);
 //        distSpeed.add(45.55, 1200);
@@ -107,7 +104,7 @@ public class Shooter extends SubsystemBase {
             double shotDistance = getGoalDistance(chosenAlliance);
             double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
             targetVelocity = coefficients[1];
-            if (Math.abs(actualShotSpeed - targetVelocity) > 30.0) {
+            if (Math.abs(actualShotSpeed - targetVelocity) > 20.0) {
                 pos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, actualShotSpeed);
             } else {
                 pos = coefficients[0];
@@ -121,22 +118,22 @@ public class Shooter extends SubsystemBase {
         velocity2 = sh2.getVelocity();
         telemetry.addData("CurrentVel1", velocity1);
         telemetry.addData("CurrentVel2", velocity2);
-//        controller1.setPID(P,I, 0.0);
-//        controller1.setFeedforward(kV, 0.0, kS);
-//        controller2.setPID(P,I, 0.0);
-//        controller2.setFeedforward(kV, 0.0, kS);
-//        velocity1 = sh.getVelocity();
-//        velocity2 = sh2.getVelocity();
-        if (actualShotSpeed >= targetVelocity) {
-            sh.setPower(0);
-            sh2.setPower(0);
+
+        double shooterPower = 0.0;
+        if (targetVelocity - actualShotSpeed > 50) {
+            shooterPower = 1;
         }
-        else if (actualShotSpeed < targetVelocity) {
-            sh.setPower(1);
-            sh2.setPower(1);
+        else if (targetVelocity > 1.0) {
+            shooterPower = Range.clip(
+                    kS + (kV * targetVelocity) + (shooterPowerKp * (targetVelocity - actualShotSpeed)),
+                    0.0,
+                    1.0
+            );
         }
-//        sh.setPower(controller1.calculate(targetVelocity - velocity1, targetVelocity, 0.0));
-//        sh2.setPower(controller2.calculate(targetVelocity - velocity2, targetVelocity, 0.0));
+        sh.setPower(shooterPower);
+        sh2.setPower(shooterPower);
+
+        telemetry.addData("ShooterPower", shooterPower);
         telemetry.update();
     }
 
@@ -159,6 +156,10 @@ public class Shooter extends SubsystemBase {
     }
     public void setBSpeed(double speed) {
         sh2.setPower(speed);
+    }
+
+    public static double[] getFarSideCoefficients(double d) {
+        return new double[]{MathUtils.clamp(0.00235*d+0.34585, Math.min(minHoodPos, maxHoodPos), Math.max(minHoodPos, maxHoodPos)), 4*d+1074};
     }
 
 
@@ -289,6 +290,77 @@ public class Shooter extends SubsystemBase {
         );
     }
 
+    public static double[] getCoefficientsFromDistanceNoMove(double d) {
+        double g = 9.81;
+        double x = ((d + shooterDistanceBiasInches) * 0.0254) - passThroughPointRadius;
+        if (d >= farCompStartInches) {
+            x += farRangeCompInches * 0.0254;
+        }
+        double y = 0.5842;
+        double a = Math.toRadians(-45);
+
+        double minHoodAngleRad = Math.toRadians(Math.min(maxHoodAngle, minHoodAngle));
+        double maxHoodAngleRad = Math.toRadians(Math.max(maxHoodAngle, minHoodAngle));
+
+        if (x <= 0) {
+            double hoodPos = Range.clip(
+                    getHoodPosFromAngle(Math.toDegrees(maxHoodAngleRad)),
+                    Math.min(minHoodPos, maxHoodPos),
+                    Math.max(minHoodPos, maxHoodPos)
+            );
+            return new double[]{hoodPos, 0};
+        }
+
+        double hoodAngle = MathUtils.clamp(Math.atan(2 * y / x - Math.tan(a)), minHoodAngleRad, maxHoodAngleRad);
+        if (d >= farLowAngleStartInches) {
+            double blend = Range.clip(
+                    (d - farLowAngleStartInches) / Math.max(1e-6, farLowAngleBlendInches),
+                    0.0,
+                    1.0
+            );
+            double targetFarAngleRad = Math.toRadians(farLowAngleTargetDeg);
+            hoodAngle += (targetFarAngleRad - hoodAngle) * blend;
+        }
+        hoodAngle = MathUtils.clamp(
+                hoodAngle,
+                minHoodAngleRad,
+                maxHoodAngleRad
+        );
+
+        double denominator = 2 * Math.pow(Math.cos(hoodAngle), 2) * (x * Math.tan(hoodAngle) - y);
+        if (denominator <= 1e-6) {
+            hoodAngle = maxHoodAngleRad;
+            denominator = 2 * Math.pow(Math.cos(hoodAngle), 2) * (x * Math.tan(hoodAngle) - y);
+        }
+        if (denominator <= 1e-6) {
+            double hoodPos = Range.clip(
+                    getHoodPosFromAngle(Math.toDegrees(hoodAngle)),
+                    Math.min(minHoodPos, maxHoodPos),
+                    Math.max(minHoodPos, maxHoodPos)
+            );
+            return new double[]{hoodPos, 0};
+        }
+
+        double ballSpeed = Math.sqrt(g * x * x / denominator);
+        if (Double.isNaN(ballSpeed) || Double.isInfinite(ballSpeed)) {
+            ballSpeed = 0;
+        }
+
+        double hoodPos = Range.clip(
+                getHoodPosFromAngle(Math.toDegrees(hoodAngle)),
+                Math.min(minHoodPos, maxHoodPos),
+                Math.max(minHoodPos, maxHoodPos)
+        );
+
+
+        if (d > 125) {
+            return getFarSideCoefficients(d);
+        }
+        else {
+            return new double[]{hoodPos, Range.clip(getShooterTicksFromSpeed(ballSpeed), 0, 1700)};
+        }
+    }
+
     public static double[] getCoefficientsFromDistance(double d) {
         double g = 9.81;
         double x = ((d + shooterDistanceBiasInches) * 0.0254) - passThroughPointRadius;
@@ -296,7 +368,7 @@ public class Shooter extends SubsystemBase {
             x += farRangeCompInches * 0.0254;
         }
         double y = 0.5842;
-        double a = Math.toRadians(-47);
+        double a = Math.toRadians(-45);
 
         double minHoodAngleRad = Math.toRadians(Math.min(maxHoodAngle, minHoodAngle));
         double maxHoodAngleRad = Math.toRadians(Math.max(maxHoodAngle, minHoodAngle));
@@ -387,8 +459,11 @@ public class Shooter extends SubsystemBase {
                 Math.max(minHoodPos, maxHoodPos)
         );
 
-
-
-        return new double[]{hoodPos, Range.clip(getShooterTicksFromSpeed(ballSpeed), 0, 1700)};
+        if (d > 125) {
+            return getFarSideCoefficients(d);
+        }
+        else {
+            return new double[]{hoodPos, Range.clip(getShooterTicksFromSpeed(ballSpeed), 0, 1700)};
+        }
     }
 }

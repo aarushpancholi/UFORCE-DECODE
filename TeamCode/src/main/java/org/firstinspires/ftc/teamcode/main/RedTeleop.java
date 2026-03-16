@@ -72,14 +72,15 @@ public class RedTeleop extends CommandOpMode {
         shooter = new Shooter(hardwareMap, telemetry, false);
         turret = new Turret(hardwareMap, telemetry);
         follower = createFollower(hardwareMap);
-        follower.setPose(savedPose != null ? savedPose : new Pose(79.976, 0,Math.toRadians(90)));
+        follower.setPose(savedPose != null ? savedPose : new Pose(79.976, 9, Math.toRadians(90)));
         telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         follower.startTeleOpDrive(true);
         intake = new Intake(hardwareMap, telemetry);
         Localization.init(follower, telemetry);
+        RobotConstants.redGoalPose = new Pose(139, 139, Math.toRadians(90));
         turret.isAutoCode = false;
-        turret.resetTurretEncoder();
 //        intake.setStopper(0.45);
+        intake.setAutoEnabled(false);
         shooter.setAutoShoot(true);
         turret.setAutoAim(true);
 
@@ -144,16 +145,12 @@ public class RedTeleop extends CommandOpMode {
                 .whenPressed(
                         new SequentialCommandGroup(
                                 new transfer(intake, true),
-                                new intakeOn1Command(intake).alongWith(new InstantCommand(() -> intake.intake2On())
-
-                                )
+                                new intakeOn1Command(intake)
                         ))
                 .whenReleased(
                         new SequentialCommandGroup(
                                 new transfer(intake, false),
-                                new intakeOn1Command(intake).alongWith(new InstantCommand(() -> intake.intake2On())
-                                )
-
+                                new intakeOn1Command(intake)
                         ));
 
         toolOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT)
@@ -177,31 +174,30 @@ public class RedTeleop extends CommandOpMode {
                         new InstantCommand(intake::intakeOff)
                 );
 
-        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_UP)
-                        .whileHeld(
-                                new ParallelCommandGroup(
-                                        new FollowPathCommand(follower,
-                                                follower.pathBuilder()
-                                                        .addPath(new BezierLine(
-                                                                follower.getPose(),
-                                                                new Pose(96.934, 98.054))
-                                                        )
-                                                        .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(45))
-                                                        .build()),
-                                        new InstantCommand(() -> {shooter.setAutoShoot(false);}),
-                                        new setShooter(shooter, (int) speedFromDistance(getGoalDistance(new Pose(96.934, 98.054), chosenAlliance)), angleFromDistance(getGoalDistance(new Pose(96.934, 98.054), chosenAlliance))),
-                                        new InstantCommand(() -> {turret.isAutoCode = true;})
-
-                                        )
-                        )
-                                .whenReleased(
-                                        new ParallelCommandGroup(
-                                                new InstantCommand(() -> {shooter.setAutoShoot(true);}),
-                                                new InstantCommand(() -> follower.startTeleOpDrive(true)),
-                                                new InstantCommand(() -> {turret.isAutoCode = false;}),
-                                                new turretAutoAim(turret,true)
-                                        )
-                                );
+//        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_UP)
+//                        .whileHeld(
+//                                new ParallelCommandGroup(
+//                                        new FollowPathCommand(follower,
+//                                                follower.pathBuilder()
+//                                                        .addPath(new BezierLine(
+//                                                                follower.getPose(),
+//                                                                new Pose(96.934, 98.054))
+//                                                        )
+//                                                        .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(45))
+//                                                        .build()),
+//                                        new InstantCommand(() -> {shooter.setAutoShoot(false);}),
+//                                        new InstantCommand(() -> {turret.isAutoCode = true;})
+//
+//                                        )
+//                        )
+//                                .whenReleased(
+//                                        new ParallelCommandGroup(
+//                                                new InstantCommand(() -> {shooter.setAutoShoot(true);}),
+//                                                new InstantCommand(() -> follower.startTeleOpDrive(true)),
+//                                                new InstantCommand(() -> {turret.isAutoCode = false;}),
+//                                                new turretAutoAim(turret,true)
+//                                        )
+//                                );
 
 
 
@@ -214,7 +210,7 @@ public class RedTeleop extends CommandOpMode {
         Localization.update();
         super.run();
 
-        if (intake.areAllBallsDetected()) {
+        if (intake.areAllBallsDetected() && intake.getCurrent() > 5) {
             gamepad1.rumble(200);
             gamepad2.rumble(200);
         }
