@@ -43,7 +43,7 @@ public class ShooterMotorTests extends OpMode {
         // Grab the same localizer so we can call update() explicitly
 //        pinpointLocalizer = hardwareMap.get(PinpointLocalizer.class, "pinpoint");
 
-        shooter = new Shooter(hardwareMap, telemetry, false);
+        shooter = new Shooter(hardwareMap, telemetry);
         follower = createFollower(hardwareMap);
         drivetrain = new DrivetrainTest(hardwareMap, telemetry);
         follower.setStartingPose(new Pose(140,0,Math.toRadians(90)));

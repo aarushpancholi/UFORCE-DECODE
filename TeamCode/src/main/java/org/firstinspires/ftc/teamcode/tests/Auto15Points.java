@@ -211,7 +211,7 @@ public class Auto15Points extends CommandOpMode {
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         intake = new Intake(hardwareMap, telemetryM);
-        shooter = new Shooter(hardwareMap, telemetryM, true);
+        shooter = new Shooter(hardwareMap, telemetryM);
         turret = new Turret(hardwareMap, telemetryM);
         intake.setStopper(0.45);
         turret.resetTurretEncoder();

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tests;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getHeading;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getRedDistance;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redGoalPose;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.resetPos;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
@@ -14,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.globals.Localization;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -39,12 +41,16 @@ public class ShooterTuningOp2 extends OpMode {
     private int speed = 0;
     private boolean autoAim = false;
     private double hoodPos = 0.7;
+    private ElapsedTime elapsedtime;
+    private int loopCounter = 0;
 
     public void init() {
+        elapsedtime = new ElapsedTime();
+        elapsedtime.reset();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         sh = hardwareMap.get(DcMotorEx.class, "rsh");
         sh2 = hardwareMap.get(DcMotorEx.class, "lsm");
-        shooter = new Shooter(hardwareMap, telemetryM, false);
+        shooter = new Shooter(hardwareMap, telemetryM);
         sh.setDirection(DcMotorSimple.Direction.FORWARD);
         sh2.setDirection(DcMotorSimple.Direction.FORWARD);
         I = 0.3;
@@ -93,7 +99,7 @@ public class ShooterTuningOp2 extends OpMode {
             intake.intake2On();
         }
         if (gamepad1.right_bumper) {
-            intake.setStopper(0.3);
+            intake.setStopper(0.35);
             double farExtraInches = Math.max(0, getRedDistance() - 110);
             if(farExtraInches > 0) {
                 intake.onSpeed(0.7);
@@ -107,14 +113,14 @@ public class ShooterTuningOp2 extends OpMode {
             intake.intakeOff();
         }
         if (gamepad1.b) {
-            intake.intake2Off();
             intake.intakeOff();
         }
         if (gamepad1.y) {
             turret.resetTurretEncoder();
         }
         if (gamepad1.right_trigger > 0.1) {
-            follower.holdPoint(follower.getPose());
+//            follower.holdPoint(follower.getPose());
+            follower.setPose(resetPos);
         }
         if (gamepad1.left_trigger > 0.1) {
             follower.startTeleOpDrive();
@@ -145,7 +151,7 @@ public class ShooterTuningOp2 extends OpMode {
         if (newShooter) {
             double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
             targetVelocity = coefficients[1];
-            if (Math.abs(actualShotSpeed - targetVelocity) > 40) {
+            if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
                 hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
             } else {
                 hoodPos = coefficients[0];
@@ -179,6 +185,7 @@ public class ShooterTuningOp2 extends OpMode {
         telemetry.addData("Comp Hood Angle (deg):", Shooter.getHoodAngleFromPos(compensatedHoodPos));
         telemetry.addData("Distance (goal):", shotDistance);
         telemetry.addData("Distance (redDistancePose):", getRedDistance());
+        telemetry.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
         telemetryM.addData("Target Speed:", speed);
         telemetryM.addData("heading", getHeading());
         telemetryM.addData("intake current", intake.getCurrent());
@@ -190,6 +197,7 @@ public class ShooterTuningOp2 extends OpMode {
         telemetryM.addData("Comp Hood Angle:", (compensatedHoodPos));
         telemetryM.addData("Distance (goal):", shotDistance);
         telemetryM.addData("Distance (redDistancePose):", getRedDistance());
+        loopCounter +=1;
 
         Localization.update();
         turret.periodic();

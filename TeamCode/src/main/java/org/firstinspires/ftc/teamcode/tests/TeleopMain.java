@@ -67,7 +67,7 @@ public class TeleopMain extends CommandOpMode {
     public void initialize() {
         super.reset();
 
-        shooter = new Shooter(hardwareMap, telemetry, false);
+        shooter = new Shooter(hardwareMap, telemetry);
         turret = new Turret(hardwareMap, telemetry);
         follower = createFollower(hardwareMap);
         follower.setPose(new Pose(135,0,Math.toRadians(90)));

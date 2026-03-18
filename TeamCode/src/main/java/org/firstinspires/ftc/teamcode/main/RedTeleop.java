@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.main;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getGoalDistance;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.chosenAlliance;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.intakeRedRamp;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.intakeRedRampDrifted;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redPark;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redRampCP;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.resetPos;
@@ -26,6 +27,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -62,27 +64,33 @@ public class RedTeleop extends CommandOpMode {
     private Shooter shooter;
     private TelemetryManager telemetry;
     private Intake intake;
+    private int loopCounter = 0;
+    private ElapsedTime elapsedtime;
 
 
     @Override
     public void initialize() {
         super.reset();
+        elapsedtime = new ElapsedTime();
+        elapsedtime.reset();
         RobotConstants.chosenAlliance = "RED";
 
-        shooter = new Shooter(hardwareMap, telemetry, false);
+        shooter = new Shooter(hardwareMap, telemetry);
         turret = new Turret(hardwareMap, telemetry);
         follower = createFollower(hardwareMap);
-        follower.setPose(savedPose != null ? savedPose : new Pose(79.976, 9, Math.toRadians(90)));
+        follower.setPose(savedPose != null ? savedPose : new Pose(135, 9, Math.toRadians(90)));
         telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         follower.startTeleOpDrive(true);
         intake = new Intake(hardwareMap, telemetry);
         Localization.init(follower, telemetry);
         RobotConstants.redGoalPose = new Pose(139, 139, Math.toRadians(90));
         turret.isAutoCode = false;
-//        intake.setStopper(0.45);
+        intake.setStopper(0.45);
+        turret.resetTurretEncoder();
         intake.setAutoEnabled(false);
         shooter.setAutoShoot(true);
         turret.setAutoAim(true);
+
 
         super.register(turret);
         super.register(shooter);
@@ -115,11 +123,12 @@ public class RedTeleop extends CommandOpMode {
         driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
                 .whileHeld(
                         new FollowPathCommand(follower, follower.pathBuilder()
-                                .addPath(new BezierLine(
+                                .addPath(new BezierCurve(
                                         follower.getPose(),
-                                        redPark
+                                        redRampCP,
+                                        intakeRedRampDrifted
                                 ))
-                                .setLinearHeadingInterpolation(follower.getHeading(), redPark.getHeading())
+                                .setLinearHeadingInterpolation(follower.getHeading(), intakeRedRamp.getHeading())
                                 .build())
                 )
                 .whenReleased(
@@ -136,7 +145,7 @@ public class RedTeleop extends CommandOpMode {
                 );
 
         toolOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
-                .whenPressed(new autoIntakeCommand(intake))
+                .whenPressed(new intakeOn1Command(intake))
                 .whenReleased(
                         new InstantCommand(intake::intakeOff).alongWith(new InstantCommand(intake::intakeReset))
                 );
@@ -218,12 +227,14 @@ public class RedTeleop extends CommandOpMode {
         if (gamepad1.left_trigger > 0.5) {
             follower.setPose(resetPos);
         }
+        loopCounter += 1;
 
 
         sens = (gamepad1.right_trigger > 0.3) ? 2.0 : 1.0;
         follower.setTeleOpDrive(-gamepad1.left_stick_y/sens, -gamepad1.left_stick_x/sens, -gamepad1.right_stick_x/sens, true);
 
         telemetry.addData("X", follower.getPose().getX());
+        telemetry.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
         telemetry.addData("Y", follower.getPose().getY());
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.update();

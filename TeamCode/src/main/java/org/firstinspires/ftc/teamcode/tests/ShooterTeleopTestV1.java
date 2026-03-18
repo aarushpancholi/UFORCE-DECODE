@@ -41,7 +41,7 @@ public class ShooterTeleopTestV1 extends OpMode {
     @Override
     public void init() {
         telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-        shooter = new Shooter(hardwareMap, telemetry, false);
+        shooter = new Shooter(hardwareMap, telemetry);
         turret = new Turret(hardwareMap, telemetry);
         follower = createFollower(hardwareMap);
         follower.setStartingPose(new Pose(79.76,9,Math.toRadians(90)));

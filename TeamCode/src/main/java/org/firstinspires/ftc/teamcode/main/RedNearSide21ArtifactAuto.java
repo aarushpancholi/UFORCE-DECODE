@@ -10,6 +10,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -66,6 +67,8 @@ public class RedNearSide21ArtifactAuto extends CommandOpMode {
     private final Pose finalMarkStart = new Pose(82.48, 31);
     private final Pose finalMarkEnd = new Pose(121, 31);
     private final Pose humanPlayerPose = new Pose(134, 6);
+    private int loopCounter;
+    private ElapsedTime elapsedtime;
 
     private PathChain path1, path2, path3, path4, path5, rampCollectPath, rampReturnPath, rampFinishCollectPath, rampBackCollectPath, directRampCollectPath1, directRampCollectPath2, directRampReturnPath, rampToFarSidePath, lastMarkCollect, lastMarkToShoot, humanPlayerCollectPath, humanPlayerToShoot, humanPlayerCollectPathFinish;
 
@@ -166,12 +169,14 @@ public class RedNearSide21ArtifactAuto extends CommandOpMode {
     @Override
     public void initialize() {
         super.reset();
+        elapsedtime = new ElapsedTime();
+        elapsedtime.reset();
 
         chosenAlliance = "RED";
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         intake = new Intake(hardwareMap, telemetryM);
-        shooter = new Shooter(hardwareMap, telemetryM, true);
+        shooter = new Shooter(hardwareMap, telemetryM);
         turret = new Turret(hardwareMap, telemetryM);
 
         intake.setAutoEnabled(true);
@@ -181,6 +186,9 @@ public class RedNearSide21ArtifactAuto extends CommandOpMode {
         intake.setStopper(0.45);
         turret.resetTurretEncoder();
 
+        super.register(intake);
+        super.register(shooter);
+        super.register(turret);
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -318,18 +326,17 @@ public class RedNearSide21ArtifactAuto extends CommandOpMode {
 
     @Override
     public void run() {
+        Localization.update();
         super.run();
 
-        Localization.update();
-        intake.periodic();
-        shooter.periodic();
-        turret.periodic();
+        loopCounter += 1;
 
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
         telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.addData("At Speed", shooter.atSpeed());
         telemetry.addData("Actual Speed", 0.5*(shooter.getVelA() - shooter.getVelB()));
+        telemetry.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
         telemetry.update();
     }
 

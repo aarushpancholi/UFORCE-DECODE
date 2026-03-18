@@ -71,7 +71,7 @@ public class BlueTeleop extends CommandOpMode {
         super.reset();
         RobotConstants.chosenAlliance = "BLUE";
 
-        shooter = new Shooter(hardwareMap, telemetry, false);
+        shooter = new Shooter(hardwareMap, telemetry);
         turret = new Turret(hardwareMap, telemetry);
         follower = createFollower(hardwareMap);
         follower.setPose(savedPose != null ? savedPose : new Pose(64.186, 0,Math.toRadians(90)));
