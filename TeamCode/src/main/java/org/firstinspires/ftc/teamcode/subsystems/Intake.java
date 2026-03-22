@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 public class Intake extends SubsystemBase {
     private static final double AUTO_STOP_CURRENT_AMPS = 5.0;
     private static final double DEFAULT_INTAKE_POWER = 1.0;
-    private static final double SLOW_TRANSFER_POWER = 0.45;
+    private static final double SLOW_TRANSFER_POWER = 0.6;
     private static final double STOPPER_SHOOT_POS = 0.35;
     private static final double STOPPER_HOLD_POS = 0.45;
 
@@ -96,13 +96,6 @@ public class Intake extends SubsystemBase {
         intakeMotor.setPower(-1.0);
     }
 
-    public void intake2On() {
-        intake1On();
-    }
-
-
-    public void intake2Off() {
-    }
 
     public boolean isBallDetected01() {
         return ((s1.getVoltage()*32.50930976)-2.695384202) < 3.5;
@@ -152,14 +145,9 @@ public class Intake extends SubsystemBase {
         telemetry.update();
     }
 
-    public boolean isIntake1On() {
+    public boolean isIntakeOn() {
         return intakeMotor.getPower() > 0.4;
     }
-
-    public boolean isIntake2On() {
-        return intakeMotor.getPower() > 0.4;
-    }
-
     public boolean isIntakeOff() {
         return intakeMotor.getPower() < 0.1;
     }

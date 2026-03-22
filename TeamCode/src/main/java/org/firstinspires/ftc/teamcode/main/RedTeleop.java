@@ -2,50 +2,32 @@ package org.firstinspires.ftc.teamcode.main;
 
 
 import static org.firstinspires.ftc.teamcode.globals.Localization.getGoalDistance;
-import static org.firstinspires.ftc.teamcode.globals.RobotConstants.chosenAlliance;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.intakeRedRamp;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.intakeRedRampDrifted;
-import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redPark;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redRampCP;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.resetPos;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.savedPose;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower;
-import static org.firstinspires.ftc.teamcode.subsystems.Shooter.angleFromDistance;
-import static org.firstinspires.ftc.teamcode.subsystems.Shooter.speedFromDistance;
-
-import android.annotation.SuppressLint;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.geometry.BezierCurve;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.Robot;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.commands.autoIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.intakeOn1Command;
-import org.firstinspires.ftc.teamcode.commands.intakeOn2Command;
-import org.firstinspires.ftc.teamcode.commands.setShooter;
 import org.firstinspires.ftc.teamcode.commands.transfer;
-import org.firstinspires.ftc.teamcode.commands.turretAutoAim;
 import org.firstinspires.ftc.teamcode.commands.turretStraight;
 import org.firstinspires.ftc.teamcode.globals.Localization;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
@@ -53,7 +35,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-import java.util.function.BooleanSupplier;
+import java.util.List;
 
 @Configurable
 @TeleOp(name = "Red TeleOp", group = "TeleOp")
@@ -62,6 +44,7 @@ public class RedTeleop extends CommandOpMode {
     private double sens = 1.0;
     private Follower follower;
     private Shooter shooter;
+    List<LynxModule> allHubs;
     private TelemetryManager telemetry;
     private Intake intake;
     private int loopCounter = 0;
@@ -70,6 +53,7 @@ public class RedTeleop extends CommandOpMode {
 
     @Override
     public void initialize() {
+        allHubs = hardwareMap.getAll(LynxModule.class);
         super.reset();
         elapsedtime = new ElapsedTime();
         elapsedtime.reset();
@@ -171,18 +155,6 @@ public class RedTeleop extends CommandOpMode {
                         new InstantCommand(intake::intakeOff)
                 );
 
-        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_UP)
-                .whenPressed(new intakeOn2Command(intake))
-                .whenReleased(
-                        new InstantCommand(intake::intakeOff)
-                );
-
-        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
-                .whenPressed(new InstantCommand(intake::intakeOpposite))
-                .whenReleased(
-                        new InstantCommand(intake::intakeOff)
-                );
-
 //        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_UP)
 //                        .whileHeld(
 //                                new ParallelCommandGroup(
@@ -216,6 +188,9 @@ public class RedTeleop extends CommandOpMode {
 
     @Override
     public void run() {
+        for (LynxModule module : allHubs) {
+            module.clearBulkCache();
+        }
         Localization.update();
         super.run();
 
@@ -233,10 +208,10 @@ public class RedTeleop extends CommandOpMode {
         sens = (gamepad1.right_trigger > 0.3) ? 2.0 : 1.0;
         follower.setTeleOpDrive(-gamepad1.left_stick_y/sens, -gamepad1.left_stick_x/sens, -gamepad1.right_stick_x/sens, true);
 
-        telemetry.addData("X", follower.getPose().getX());
+//        telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
-        telemetry.addData("Y", follower.getPose().getY());
-        telemetry.addData("Heading", follower.getPose().getHeading());
+//        telemetry.addData("Y", follower.getPose().getY());
+//        telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.update();
     }
 

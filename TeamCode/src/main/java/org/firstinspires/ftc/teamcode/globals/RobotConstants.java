@@ -6,8 +6,8 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 public class RobotConstants {
-    public static double maxTurretPos = 168;
-    public static double minTurretPos = -168;
+    public static double maxTurretPos = 169;
+    public static double minTurretPos = -169;
 
     public MotorEx frontRight;
     public MotorEx frontLeft;
@@ -35,8 +35,8 @@ public class RobotConstants {
     public static double minHoodAngle = 65;
 
     public static Pose blueGoalPose = new Pose(6, 141, Math.toRadians(90));
-    public static Pose redGoalPose  = new Pose(139, 139, Math.toRadians(90));
-    public static Pose farRedGoalPose = new Pose(136, 140);
+    public static Pose redGoalPose  = new Pose(139, 138, Math.toRadians(90));
+    public static Pose farRedGoalPose = new Pose(138, 139);
 
     public static Pose redDistancePose = new Pose(138, 138, Math.toRadians(90));
 
@@ -50,7 +50,7 @@ public class RobotConstants {
     public static Pose savedPose = null;
 
     public static Pose blueRampCP = new Pose(30.68223350253807, 58.12994923857866);
-    public static Pose intakeRedRamp = new Pose(135, 61.0, Math.toRadians(31));
+    public static Pose intakeRedRamp = new Pose(130.7, 59.5, Math.toRadians(26.14));
     public static Pose intakeRedRampDrifted = new Pose(135, 58.0, Math.toRadians(31));
     public static Pose intakeBlueRamp = intakeRedRamp.mirror();
     public static Pose redRampCP = new Pose(103.19390862944162, 60);

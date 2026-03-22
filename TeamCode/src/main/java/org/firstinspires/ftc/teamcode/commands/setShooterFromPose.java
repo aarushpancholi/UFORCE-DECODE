@@ -29,7 +29,7 @@ public class setShooterFromPose extends CommandBase {
 
     @Override
     public void initialize() {
-        double[] coefficients = getCoefficientsFromDistanceNoMove(getGoalDistance(targetPose, alliance));
+        double[] coefficients = getCoefficientsFromDistance(getGoalDistance(targetPose, alliance));
         this.target = coefficients[1];
         this.pos = coefficients[0];
         //turn outtake on

@@ -53,7 +53,7 @@ public class Shooter extends SubsystemBase {
     // 2.5in ring radius; 5in was ring diameter and caused a systematic short-range bias.
     private static double passThroughPointRadius = 0.0635;
     // Extra horizontal correction in inches (positive = shoot farther).
-    public static double shooterDistanceBiasInches = 3;
+    public static double shooterDistanceBiasInches = 0;
     // Far-shot correction for drag/spin/slip not captured by ideal projectile equations.
     public static double farCompStartInches = 100.0;
     public static double farRangeCompInches = 0.0;
@@ -105,34 +105,40 @@ public class Shooter extends SubsystemBase {
             double shotDistance = getGoalDistance(chosenAlliance);
             double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
             targetVelocity = coefficients[1];
-//            if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
-//                pos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, actualShotSpeed);
-//            } else {
+            if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
+                pos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, actualShotSpeed);
+            } else {
                 pos = coefficients[0];
-//            }
+            }
             setHood(pos);
         }
-        telemetry.addData("TargetVel", targetVelocity);
-        telemetry.addData("Difference", actualShotSpeed - targetVelocity);
-        telemetry.addData("New hood", (Math.abs(actualShotSpeed - targetVelocity) > 40.0));
-        telemetry.addData("CurrentVel1", velocity1);
-        telemetry.addData("CurrentVel2", velocity2);
+//        telemetry.addData("TargetVel", targetVelocity);
+//        telemetry.addData("Difference", actualShotSpeed - targetVelocity);
+//        telemetry.addData("New hood", (Math.abs(actualShotSpeed - targetVelocity) > 40.0));
+//        telemetry.addData("CurrentVel1", velocity1);
+//        telemetry.addData("CurrentVel2", velocity2);
 
         double shooterPower = 0.0;
-        if (targetVelocity - actualShotSpeed > 50) {
+//        if (targetVelocity - actualShotSpeed > 50) {
+//            shooterPower = 1;
+//        }
+//        else if (targetVelocity > 1.0) {
+//            shooterPower = Range.clip(
+//                    kS + (kV * targetVelocity) + (shooterPowerKp * (targetVelocity - actualShotSpeed)),
+//                    0.0,
+//                    1.0
+//            );
+//        }
+        if (actualShotSpeed < targetVelocity) {
             shooterPower = 1;
         }
-        else if (targetVelocity > 1.0) {
-            shooterPower = Range.clip(
-                    kS + (kV * targetVelocity) + (shooterPowerKp * (targetVelocity - actualShotSpeed)),
-                    0.0,
-                    1.0
-            );
+        else {
+            shooterPower = 0;
         }
         sh.setPower(shooterPower);
         sh2.setPower(shooterPower);
 
-        telemetry.addData("ShooterPower", shooterPower);
+//        telemetry.addData("ShooterPower", shooterPower);
 //        telemetry.update();
     }
 
@@ -148,13 +154,6 @@ public class Shooter extends SubsystemBase {
 
     public void setTargetEPT(double ept) {
         targetVelocity = ept;
-    }
-
-    public void setASpeed(double speed) {
-        sh.setPower(speed);
-    }
-    public void setBSpeed(double speed) {
-        sh2.setPower(speed);
     }
 
     public static double[] getFarSideCoefficients(double d) {
@@ -240,11 +239,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public static double getShooterTicksFromSpeed(double speed) {
-        return (28*2.5*speed/(2*Math.PI*0.048));
+        return (28*2.4*speed/(2*Math.PI*0.048));
     }
 
     public static double getShooterSpeedFromTicks(double ticksPerSecond) {
-        return (ticksPerSecond * Math.PI * 0.048) / 28.0;
+        return (ticksPerSecond * Math.PI * 0.048*2) / (28.0*2.4);
     }
 
     public static double getLowAngleHoodFromDistanceAndSpeed(double distanceInches, double actualTicksPerSecond) {
@@ -272,7 +271,7 @@ public class Shooter extends SubsystemBase {
             return baselineHoodPos;
         }
 
-        double tanThetaLow = (ballSpeed * ballSpeed + sqrtDiscriminant) / denominator;
+        double tanThetaLow = (ballSpeed * ballSpeed - sqrtDiscriminant) / denominator;
         double hoodAngle = Math.atan(tanThetaLow);
         if (Double.isNaN(hoodAngle) || Double.isInfinite(hoodAngle)) {
             return baselineHoodPos;
@@ -367,7 +366,7 @@ public class Shooter extends SubsystemBase {
             x += farRangeCompInches * 0.0254;
         }
         double y = 0.5842;
-        double a = Math.toRadians(-30);
+        double a = Math.toRadians(-7);
 
         double minHoodAngleRad = Math.toRadians(Math.min(maxHoodAngle, minHoodAngle));
         double maxHoodAngleRad = Math.toRadians(Math.max(maxHoodAngle, minHoodAngle));
@@ -382,15 +381,15 @@ public class Shooter extends SubsystemBase {
         }
 
         double hoodAngle = MathUtils.clamp(Math.atan(2 * y / x - Math.tan(a)), minHoodAngleRad, maxHoodAngleRad);
-        if (d >= farLowAngleStartInches) {
-            double blend = Range.clip(
-                    (d - farLowAngleStartInches) / Math.max(1e-6, farLowAngleBlendInches),
-                    0.0,
-                    1.0
-            );
-            double targetFarAngleRad = Math.toRadians(farLowAngleTargetDeg);
-            hoodAngle += (targetFarAngleRad - hoodAngle) * blend;
-        }
+//        if (d >= farLowAngleStartInches) {
+//            double blend = Range.clip(
+//                    (d - farLowAngleStartInches) / Math.max(1e-6, farLowAngleBlendInches),
+//                    0.0,
+//                    1.0
+//            );
+//            double targetFarAngleRad = Math.toRadians(farLowAngleTargetDeg);
+//            hoodAngle += (targetFarAngleRad - hoodAngle) * blend;
+//        }
         hoodAngle = MathUtils.clamp(
                 hoodAngle,
                 minHoodAngleRad,
@@ -452,11 +451,11 @@ public class Shooter extends SubsystemBase {
                 Math.max(minHoodPos, maxHoodPos)
         );
 
-//        if (d > 125) {
-//            return getFarSideCoefficients(d);
-//        }
-//        else {
+        if (d > 125) {
+            return getFarSideCoefficients(d);
+        }
+        else {
             return new double[]{hoodPos, Range.clip(getShooterTicksFromSpeed(ballSpeed), 0, 1900)};
-//        }
+        }
     }
 }

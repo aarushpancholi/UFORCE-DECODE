@@ -14,10 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.globals.Localization;
-import org.firstinspires.ftc.teamcode.globals.RobotConstants;
-import org.firstinspires.ftc.teamcode.subsystems.DrivetrainTest;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
@@ -27,7 +24,6 @@ public class TurretTeleopTestV1 extends OpMode {
     private Turret turret;
     private Follower follower;
     private TelemetryManager telemetry;
-    private DrivetrainTest drivetrain;
     private Intake intake;
     public static double kP = 0.0;
     public static double kI = 0.0;
@@ -48,7 +44,6 @@ public class TurretTeleopTestV1 extends OpMode {
         turret = new Turret(hardwareMap, null);
         turret.resetTurretEncoder();
         follower = createFollower(hardwareMap);
-        drivetrain = new DrivetrainTest(hardwareMap, telemetry);
         follower.setStartingPose(new Pose(28,0,Math.toRadians(90)));
         telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         intake = new Intake(hardwareMap, telemetry);
@@ -77,7 +72,6 @@ public class TurretTeleopTestV1 extends OpMode {
         telemetry.addData("encoder", turret.getPos());
         telemetry.addData("target", Turret.targetTicks);
         Localization.update();
-        drivetrain.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, 1.0);
 //        follower.setTeleOpDrive(
 //                -gamepad1.left_stick_y,
 //                -gamepad1.left_stick_x,
@@ -98,7 +92,6 @@ public class TurretTeleopTestV1 extends OpMode {
             intake.autoIntake();
         } else {
             intake.intakeOff();
-            intake.intake2Off();
         }
 
         if (intake.areAllBallsDetected()) {

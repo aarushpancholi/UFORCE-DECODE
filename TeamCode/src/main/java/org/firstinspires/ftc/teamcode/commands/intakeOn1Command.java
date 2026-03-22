@@ -23,6 +23,6 @@ public class intakeOn1Command extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return intakeSubsystem.isIntake1On();
+        return intakeSubsystem.isIntakeOn();
     }
 }
