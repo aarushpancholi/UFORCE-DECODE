@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.disengagePos;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.engagePos;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -25,13 +28,15 @@ public class Intake extends SubsystemBase {
     private final DcMotorEx intakeMotor;
     private final ServoEx stopper;
 
+    private final ServoEx pto;
+
     private final TelemetryManager telemetry;
 
     private double current;
     private boolean autoEnabled = false;
     private boolean triggered = false;
     private boolean shooting = false;
-    private boolean currentStopEnabled = true;
+    private boolean currentStopEnabled = false;
 
     private boolean all3 = false;
 
@@ -45,6 +50,8 @@ public class Intake extends SubsystemBase {
         intakeMotor.setDirection(DcMotorEx.Direction.REVERSE);
 
         stopper = new ServoEx(hardwareMap, "stopper");
+        pto = new ServoEx(hardwareMap, "pto");
+        pto.setInverted(true);
 
         telemetry = telemetryManager;
     }
@@ -52,6 +59,15 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         current = intakeMotor.getCurrent(CurrentUnit.AMPS);
+
+        if ((Math.abs(stopper.get() - 0.45) < 0.01) && isBallDetected03() && intakeMotor.isMotorEnabled()) {
+            disengagePTO();
+        }
+
+        if (areAllBallsDetected()) {
+            engagePTO();
+        }
+
 
         if (shouldStopForCurrent()) {
             intakeOff();
@@ -74,6 +90,17 @@ public class Intake extends SubsystemBase {
 
     public void setStopper(double pos) {
         stopper.set(pos);
+    }
+    public void setPTO(double pos) {
+        pto.set(pos);
+    }
+
+    public void engagePTO() {
+        pto.set(engagePos);
+    }
+
+    public void disengagePTO() {
+        pto.set(disengagePos);
     }
 
     public void onSpeed(double speed) {
@@ -170,7 +197,7 @@ public class Intake extends SubsystemBase {
     }
 
     public double getCurrent() {
-        return current;
+        return intakeMotor.getCurrent(CurrentUnit.AMPS);
     }
 
     public boolean hasTriggeredStop() {
@@ -187,12 +214,15 @@ public class Intake extends SubsystemBase {
 
     public void startTransfer() {
         setStopper(STOPPER_SHOOT_POS);
+        engagePTO();
+        intakeMotor.setPower(1);
         shooting = true;
         triggered = false;
     }
 
     public void stopTransfer() {
         setStopper(STOPPER_HOLD_POS);
+        intakeMotor.setPower(0);
         shooting = false;
         currentStopEnabled = true;
     }

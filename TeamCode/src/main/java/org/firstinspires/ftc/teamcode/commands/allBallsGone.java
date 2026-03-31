@@ -21,6 +21,6 @@ public class allBallsGone extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return intakeSubsystem.getCurrent() < 1.3;
+        return intakeSubsystem.noBalls();
     }
 }

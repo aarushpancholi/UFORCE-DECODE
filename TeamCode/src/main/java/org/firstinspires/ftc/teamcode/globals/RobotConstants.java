@@ -35,8 +35,8 @@ public class RobotConstants {
     public static double minHoodAngle = 65;
 
     public static Pose blueGoalPose = new Pose(6, 141, Math.toRadians(90));
-    public static Pose redGoalPose  = new Pose(139, 138, Math.toRadians(90));
-    public static Pose farRedGoalPose = new Pose(138, 139);
+    public static Pose redGoalPose  = new Pose(141, 141, Math.toRadians(90));
+    public static Pose farRedGoalPose = new Pose(140.4, 141);
 
     public static Pose redDistancePose = new Pose(138, 138, Math.toRadians(90));
 
@@ -44,16 +44,19 @@ public class RobotConstants {
     public static final int RED_GOAL_TAG_ID = 24;
     public static final int BLUE_GOAL_TAG_ID = 20;
 
+    public static double engagePos = 0;
+    public static double disengagePos = 0.82;
+
     public static final Pose resetPos = new Pose(135, 9, Math.toRadians(0));
 
     public static String chosenAlliance = "RED";
     public static Pose savedPose = null;
 
     public static Pose blueRampCP = new Pose(30.68223350253807, 58.12994923857866);
-    public static Pose intakeRedRamp = new Pose(130.7, 59.5, Math.toRadians(26.14));
+    public static Pose intakeRedRamp = new Pose(136, 57.7, Math.toRadians(26));
     public static Pose intakeRedRampDrifted = new Pose(135, 58.0, Math.toRadians(31));
     public static Pose intakeBlueRamp = intakeRedRamp.mirror();
-    public static Pose redRampCP = new Pose(103.19390862944162, 60);
+    public static Pose redRampCP = new Pose(124, 60);
     public static Pose bluePark = new Pose(53.076142131979694, 23.350253807106576, Math.toRadians(180));
     public static Pose redPark = new Pose(53.076142131979694, 23.350253807106576, Math.toRadians(0));
 

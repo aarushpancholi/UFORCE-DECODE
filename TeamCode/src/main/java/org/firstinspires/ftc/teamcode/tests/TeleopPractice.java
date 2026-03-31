@@ -28,8 +28,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.skeletonarmy.marrow.zones.Point;
+import com.skeletonarmy.marrow.zones.PolygonZone;
 
 import org.firstinspires.ftc.teamcode.globals.Localization;
+import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
@@ -57,37 +60,51 @@ public class TeleopPractice extends OpMode {
     private int speed = 0;
     private boolean autoAim = false;
     private double hoodPos = 0.7;
+    private double sensitivity = 1;
     private ElapsedTime elapsedtime;
     private AprilTagTracking vision;
+    private PolygonZone closeLaunchZone, farLaunchZone, robotZone;
     List<LynxModule> allHubs;
     private int loopCounter = 0;
 
     public void init() {
         elapsedtime = new ElapsedTime();
         elapsedtime.reset();
+        Shooter.landAngle = Math.toRadians(-7);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         sh = hardwareMap.get(DcMotorEx.class, "rsh");
+        closeLaunchZone = new PolygonZone(new Point(144, 144), new Point(72, 72), new Point(0, 144));
+        farLaunchZone = new PolygonZone(new Point(48, 0), new Point(72, 24), new Point(96, 0));
         allHubs = hardwareMap.getAll(LynxModule.class);
         sh2 = hardwareMap.get(DcMotorEx.class, "lsm");
         shooter = new Shooter(hardwareMap, telemetryM);
         sh.setDirection(DcMotorSimple.Direction.FORWARD);
         sh2.setDirection(DcMotorSimple.Direction.FORWARD);
+        robotZone = new PolygonZone(17, 17);
         vision = new AprilTagTracking(hardwareMap);
+        Shooter.shooterDistanceBiasInches = 0;
         turret = new Turret(hardwareMap, telemetryM);
         turret.setAutoAim(true);
 //        turret.resetTurretEncoder();
         intake = new Intake(hardwareMap, telemetryM);
         intake.setStopper(0.45);
         follower = createFollower(hardwareMap);
-        follower.setStartingPose(savedPose != null ? savedPose : new Pose(135,9,Math.toRadians(90)));
+        if (savedPose != null && savedPose.getHeading() > 1) {
+            follower.setStartingPose(savedPose);
+        } else {
+//        follower.setStartingPose(savedPose != null ? savedPose : new Pose(88,75,Math.toRadians(0)));
+            follower.setStartingPose(new Pose(89, 78, Math.toRadians(0)));
+        }
         Localization.init(follower, telemetryM);
-
         telemetryM.addLine("Initialized");
+        telemetry.addData("saved Pose:", savedPose);
+        redGoalPose  = new Pose(142, 140, Math.toRadians(90));
+        telemetry.update();
         telemetryM.update();
     }
 
     public void start() {
-        follower.startTeleOpDrive(true);
+        follower.startTeleOpDrive(false);
         shooter.setHood(hoodPos);
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -99,70 +116,118 @@ public class TeleopPractice extends OpMode {
         for (LynxModule module : allHubs) {
             module.clearBulkCache();
         }
+//        robotZone.setPosition(follower.getPose().getX(), follower.getPose().getY());
+//        robotZone.setRotation(follower.getPose().getHeading());
         double shotDistance = follower.getPose().distanceFrom(redGoalPose);
         double actualShotSpeed = Math.abs(0.5 * (sh.getVelocity() - sh2.getVelocity()));
         double compensatedHoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, actualShotSpeed);
-
-        if (gamepad1.xWasPressed()) {
-            follower.setPose(vision.getLocalization());
+        double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
+        if (shotDistance < 110) {
+            targetVelocity = coefficients[1] - 40;
         }
+        else {
+            targetVelocity = coefficients[1];
+        }
+        if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
+            hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
+        } else {
+            hoodPos = coefficients[0];
+        }
+        shooter.setHood(hoodPos);
+
+
+        velocity1 = sh.getVelocity();
+        velocity2 = sh2.getVelocity();
+//
+//        if (gamepad1.right_stick_x > 0.1 || gamepad1.left_stick_x > 0.1 || gamepad1.left_stick_y > 0.1) {
+//            follower.breakFollowing();
+//            follower.startTeleOpDrive(true);
+//        }
+
+        if (gamepad1.dpadRightWasReleased()) {
+            redGoalPose  = new Pose(141, redGoalPose.getY() - 0.5, Math.toRadians(90));
+        }
+        if (gamepad1.dpadLeftWasReleased()) {
+            redGoalPose  = new Pose(141, redGoalPose.getY() + 0.5, Math.toRadians(90));
+        }
+
+        if(intake.areAllBallsDetected()) {
+            gamepad1.rumble(200);
+            gamepad2.rumble(200);
+        }
+
+        if (gamepad1.right_trigger > 0.1) {
+            sensitivity = 0.5;
+        } else {
+            sensitivity = 1;
+        }
+
 
         if (gamepad1.rightBumperWasPressed()) {
-            follower.followPath(follower.pathBuilder()
-                    .addPath(new BezierLine(
-                            follower.getPose(),
-                            intakeRedRamp
-                    ))
-                            .setHeadingInterpolation(
-                            HeadingInterpolator.piecewise(
-                                    new HeadingInterpolator.PiecewiseNode(
-                                            0,
-                                            .5,
-                                            HeadingInterpolator.tangent
-                                    ),
-                                    new HeadingInterpolator.PiecewiseNode(
-                                            .5,
-                                            1.0,
-                                            HeadingInterpolator.constant(Math.toRadians(24.5))
-                                    )
-                            ))
-                    .build());
+            if ((follower.getPose().distanceFrom(intakeRedRamp) < 20))
+            {
+                follower.followPath(follower.pathBuilder()
+                        .addPath(new BezierCurve(
+                                follower.getPose(),
+                                redRampCP,
+                                intakeRedRamp
+                        ))
+                        .setConstantHeadingInterpolation(intakeRedRamp.getHeading())
+                        .build());
+            }
+            else {
+                follower.followPath(follower.pathBuilder()
+                        .addPath(new BezierCurve(
+                                follower.getPose(),
+                                redRampCP,
+                                intakeRedRamp
+                        ))
+                        .setHeadingInterpolation(
+                                HeadingInterpolator.piecewise(
+                                        new HeadingInterpolator.PiecewiseNode(
+                                                0,
+                                                .5,
+                                                HeadingInterpolator.constant(Math.toRadians(0))
+                                        ),
+                                        new HeadingInterpolator.PiecewiseNode(
+                                                .5,
+                                                1.0,
+                                                HeadingInterpolator.constant(intakeRedRamp.getHeading()))
+                                )
+                        )
+                        .build());
+            }
         }
         else if (gamepad1.rightBumperWasReleased()) {
-            follower.startTeleOpDrive(true);
+            follower.startTeleOpDrive(false);
         }
 
         if (gamepad1.leftBumperWasPressed()) {
             follower.followPath(follower.pathBuilder()
                     .addPath(new BezierLine(
                             follower.getPose(),
-                            new Pose(87, 74)
+                            new Pose(84, 75)
                     ))
                     .setHeadingInterpolation(
                             HeadingInterpolator.piecewise(
                                     new HeadingInterpolator.PiecewiseNode(
                                             0,
-                                            .8,
-                                            HeadingInterpolator.tangent.reverse()
-                                    ),
-                                    new HeadingInterpolator.PiecewiseNode(
-                                            .8,
                                             1.0,
-                                            HeadingInterpolator.constant(Math.toRadians(45))
+                                            HeadingInterpolator.tangent.reverse()
                                     )
                             ))
                     .build());
         }
         else if (gamepad1.leftBumperWasReleased()) {
-            follower.startTeleOpDrive(true);
+            follower.startTeleOpDrive(false);
         }
 
 
 
         follower.setTeleOpDrive(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
-                -gamepad1.right_stick_x,
+                -gamepad1.left_stick_y * sensitivity,
+                -gamepad1.left_stick_x * sensitivity,
+                -gamepad1.right_stick_x * sensitivity,
                 true
         );
         if (gamepad1.a) {
@@ -185,19 +250,33 @@ public class TeleopPractice extends OpMode {
         }
 
         if (gamepad2.left_bumper) {
+            intake.engagePTO();
             intake.setStopper(0.35);
             double farExtraInches = Math.max(0, getRedDistance() - 110);
             if(farExtraInches > 0) {
-                intake.onSpeed(0.7);
+                intake.onSpeed(0.8);
             }
             else {
-                intake.intake1On();
+                intake.onSpeed(1);
             }
         }
         else if (gamepad2.leftBumperWasReleased()) {
             intake.intakeOff();
             intake.setStopper(0.45);
         }
+//
+//        if (robotZone.isInside(closeLaunchZone)) {
+//            intake.setStopper(0.35);
+//            intake.intake1On();
+//        }
+//
+//        if (intake.areAllBallsDetected() && (!robotZone.isInside(closeLaunchZone) && !robotZone.isInside(farLaunchZone))) {
+//            intake.intakeOff();
+//        }
+//
+//        if (!robotZone.isInside(closeLaunchZone) && !robotZone.isInside(farLaunchZone)) {
+//            intake.setStopper(0.45);
+//        }
 
 //        if (gamepad1.dpadLeftWasReleased()) {
 //            hoodPos += 0.025;
@@ -206,18 +285,8 @@ public class TeleopPractice extends OpMode {
 
 
 
-            double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
-            targetVelocity = coefficients[1];
-            if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
-                hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
-            } else {
-                hoodPos = coefficients[0];
-            }
-            shooter.setHood(hoodPos);
 
 
-        velocity1 = sh.getVelocity();
-        velocity2 = sh2.getVelocity();
         if (sh.getVelocity() > targetVelocity) {
             sh.setPower(0);
             sh2.setPower(0);
@@ -233,9 +302,9 @@ public class TeleopPractice extends OpMode {
 //        sh.setPower(controller1.calculate(targetVelocity - velocity1, targetVelocity, 0.0));
 //        sh2.setPower(controller2.calculate(targetVelocity - velocity2, targetVelocity, 0.0));
 
-        telemetryM.addData("Odometry pose", getPose());
-        telemetryM.addData("Limelight pose", vision.getLocalization());
-        telemetryM.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
+//        telemetryM.addData("Odometry pose", getPose());
+//        telemetryM.addData("Limelight pose", vision.getLocalization());
+//        telemetryM.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
 
         loopCounter +=1;
 
@@ -243,6 +312,6 @@ public class TeleopPractice extends OpMode {
         turret.periodic();
         intake.periodic();
         telemetry.update();
-        telemetryM.update();
+//        telemetryM.update();
     }
 }

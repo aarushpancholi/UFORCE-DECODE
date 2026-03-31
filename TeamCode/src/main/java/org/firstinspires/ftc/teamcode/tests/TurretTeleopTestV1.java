@@ -2,6 +2,10 @@ package org.firstinspires.ftc.teamcode.tests;
 
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower;
+import static org.firstinspires.ftc.teamcode.subsystems.Turret.targetTicks;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.disengagePos;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.engagePos;
+import static org.firstinspires.ftc.teamcode.subsystems.Turret.turretPID;
 
 import android.annotation.SuppressLint;
 
@@ -13,9 +17,11 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.globals.Localization;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 @Configurable
@@ -25,7 +31,10 @@ public class TurretTeleopTestV1 extends OpMode {
     private Follower follower;
     private TelemetryManager telemetry;
     private Intake intake;
-    public static double kP = 0.0;
+    private Shooter shooter;
+    public static double engageTestPos = 1;
+    public static double disengageTestPos = 0.8;
+    public static double kP = 0.1;
     public static double kI = 0.0;
     public static double kD = 0.0;
     public static double kF = 0.0002;
@@ -47,6 +56,7 @@ public class TurretTeleopTestV1 extends OpMode {
         follower.setStartingPose(new Pose(28,0,Math.toRadians(90)));
         telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         intake = new Intake(hardwareMap, telemetry);
+        shooter = new Shooter(hardwareMap, telemetry);
         turret.resetTurretEncoder();
         Localization.init(follower, telemetry);
 
@@ -63,78 +73,57 @@ public class TurretTeleopTestV1 extends OpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void loop() {
-        turret.setAutoAim(true);
-        turret.isAutoCode = setPoint;
-        turret.turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
-//        turret.setTargetTicks(target);
-        // Keep localization fresh
-        // (If your PinpointLocalizer uses a different update method name, change this line.)
-        telemetry.addData("encoder", turret.getPos());
-        telemetry.addData("target", Turret.targetTicks);
-        Localization.update();
-//        follower.setTeleOpDrive(
-//                -gamepad1.left_stick_y,
-//                -gamepad1.left_stick_x,
-//                -gamepad1.right_stick_x,
-//                true
-//        );
+//        engagePos = 0.4;
+//        disengagePos = 0.4;
+//        shooter.setTargetEPT(1000);
+//        shooter.setAutoShoot(false);
+//        shooter.periodic();
 
-        // Run your turret auto-aim logic
-        if (gamepad1.a) {
-            turret.resetTurretEncoder();
-        }
-
-//        if (gamepad1.right_bumper) {
-//            turret.setAutoAim(true);
+//        turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
+//
+//        if (gamepad1.a) turret.resetTurretEncoder();   // reset
+//        if (gamepad1.b) {                              // manual profiled move
+//            turret.setAutoAim(false);
+//            turret.setTargetTicks(target);             // change target from dashboard
 //        }
-        intake.testSensors();
-        if (gamepad1.right_trigger > 0.1) {
-            intake.autoIntake();
-        } else {
-            intake.intakeOff();
-        }
-
-        if (intake.areAllBallsDetected()) {
-            gamepad1.rumble(200);
-        }
-
-        if (gamepad1.right_bumper) {
-            intake.intakeReset();
-        }
-
-        turret.periodic();
-
-        // Debug telemetry
-        Pose robotPose = follower.getPose();
-        double robotHeading = Localization.getHeading(); // expected radians
-
-//        double turretRelHeading = turret.encoderToTurretHeading();
-//        double turretAbsHeading = AngleUnit.normalizeRadians(robotHeading + turretRelHeading);
-
-        // What your code is using internally
-//        double diffFromYourHelper = Localization.getBlueHeadingDiff(turretAbsHeading);
+//        if (gamepad1.x) turret.setAutoAim(true);       // auto-aim + profiled tracking
+//        if (gamepad1.y) {                              // center test
+//            turret.setAutoAim(false);
+//            turret.straight();
+//        }
 //
-//        // Independent sanity check: bearing to goal from (x,y)
-//        double dx = RobotConstants.blueGoalPose.getX() - robotPose.getX();
-//        double dy = RobotConstants.blueGoalPose.getY() - robotPose.getY();
-//        double goalBearingAbs = Math.atan2(dy, dx);
-//        double diffFromBearing = AngleUnit.normalizeRadians(goalBearingAbs - turretAbsHeading);
-//
-//        telemetry.addData("Aimed", turret.isAimed());
-//        telemetry.addData("Robot Pose (x,y,hdeg)",
-//                String.format("%.1f, %.1f, %.1f",
-//                        robotPose.getX(), robotPose.getY(), Math.toDegrees(robotPose.getHeading())));
-//        telemetry.addData("Robot Heading (deg)", Math.toDegrees(robotHeading));
-//        telemetry.addData("Turret Rel (deg)", Math.toDegrees(turretRelHeading));
-//        telemetry.addData("Turret Abs (deg)", Math.toDegrees(turretAbsHeading));
-//
-//        telemetry.addData("BlueDiff helper (deg)", Math.toDegrees(diffFromYourHelper));
-//        telemetry.addData("Goal bearing (deg)", Math.toDegrees(goalBearingAbs));
-//        telemetry.addData("Diff bearing (deg)", Math.toDegrees(diffFromBearing));
+//        turret.periodic(); // REQUIRED: runs profile + PID
 
+//        if (gamepad1.a) {
+//            intake.intake1On();
+//        }
+//
+//        if (gamepad1.x) {
+//            intake.setStopper(0.35);
+//        }
+//
+//        if (gamepad1.leftBumperWasPressed()) {
+//            intake.setPTO(disengageTestPos);
+//        }
+//
+//        if (gamepad1.rightBumperWasPressed()) {
+//            intake.setPTO(engageTestPos);
+//        }
+//
+//        if (gamepad1.b) {
+//            intake.intakeOff();
+//        }
+        intake.engagePTO();
+        intake.intake1On();
 
+        telemetry.addData("encoder", turret.getPos());
+        telemetry.addData("targetTicks", targetTicks);
+        telemetry.addData("autoAim", turret.autoAimEnabled);
+        telemetry.addData("aimed", turret.isAimed());
+        telemetry.addData("current", intake.getCurrent());
         telemetry.update();
     }
+
 
     @Override
     public void stop() {

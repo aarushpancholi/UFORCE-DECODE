@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import static org.firstinspires.ftc.teamcode.globals.Localization.getGoalDistance;
 import static org.firstinspires.ftc.teamcode.subsystems.Shooter.getCoefficientsFromDistance;
-import static org.firstinspires.ftc.teamcode.subsystems.Shooter.getCoefficientsFromDistanceNoMove;
 
 import com.pedropathing.geometry.Pose;
 import com.seattlesolvers.solverslib.command.CommandBase;

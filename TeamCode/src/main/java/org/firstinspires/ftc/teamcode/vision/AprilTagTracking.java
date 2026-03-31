@@ -118,12 +118,12 @@ public class AprilTagTracking {
         double robotYaw = Math.toDegrees(getHeading());
         limelight.updateRobotOrientation(robotYaw);
             LLResult result = limelight.getLatestResult();
-            if (result != null && result.isValid()) {
+            if (result != null && result.isValid() && (result.getFiducialResults().get(0).getFiducialId() == 24)) {
                 Pose3D botpose = result.getBotpose_MT2();
 
                 // Limelight botpose uses meters/degrees, while Pedro Pose uses inches/radians.
-                double xInches = botpose.getPosition().toUnit(DistanceUnit.INCH).x + 188.0;
-                double yInches = botpose.getPosition().toUnit(DistanceUnit.INCH).y + 75;
+                double xInches = botpose.getPosition().toUnit(DistanceUnit.INCH).x + 188; // 188
+                double yInches = botpose.getPosition().toUnit(DistanceUnit.INCH).y + 75; // 75
                 double headingRad = botpose.getOrientation().getYaw(AngleUnit.RADIANS);
                 return new Pose(xInches, yInches, headingRad);
             }

@@ -31,7 +31,7 @@ import java.util.OptionalDouble;
 
 @Configurable
 public class Turret extends SubsystemBase {
-    private final MotorEx turret;
+    public final MotorEx turret;
     private final AprilTagTracking vision;
 
     public boolean autoAimEnabled = false;
@@ -41,11 +41,11 @@ public class Turret extends SubsystemBase {
     private static final double MAX_TURRET_RAD = Math.toRadians(135);
     private static final double INCHES_TO_METERS = 0.0254;
 
-    public static double maxVelocityLeadDeg = 20.0;
+    public static double maxVelocityLeadDeg = 40.0;
 
-    public static double kP = 0.05;
+    public static double kP = 0.03;
     public static double kI = 0.0;
-    public static double kD = 0.0001;
+    public static double kD = 0.0008;
     public static double kF = 0.0002;
     public boolean isAutoCode = false;
     // PIDF (tune these)
@@ -182,11 +182,19 @@ public class Turret extends SubsystemBase {
         double[] shooterCoefficients = Shooter.getCoefficientsFromDistance(goalDistanceInches);
 
         double hoodPos = shooterCoefficients[0];
-        double shooterTicksPerSec = shooterCoefficients[1];
         double hoodAngleRad = Math.toRadians(Shooter.getHoodAngleFromPos(hoodPos));
+        double measuredShotTicksPerSec = Math.abs(0.5 * (Shooter.velocity1 - Shooter.velocity2));
+        double shooterTicksPerSec = measuredShotTicksPerSec > 1.0
+                ? measuredShotTicksPerSec
+                : Math.max(Shooter.targetVelocity, shooterCoefficients[1]);
         double shooterSpeedMps = Shooter.getShooterSpeedFromTicks(shooterTicksPerSec);
 
-        Vector robotToGoal = (chosenAlliance.equals("BLUE") ? blueGoalPose : redGoalPose)
+        Pose goalPose = blueGoalPose;
+        if (chosenAlliance.equals("RED")) {
+            goalPose = goalDistanceInches > 100.0 ? farRedGoalPose : redGoalPose;
+        }
+
+        Vector robotToGoal = goalPose
                 .minus(Localization.getPose())
                 .getAsVector();
         Vector robotVelocity = Localization.getVelocity();
@@ -196,13 +204,20 @@ public class Turret extends SubsystemBase {
         double parallelComponent = -Math.cos(coordinateTheta) * robotSpeedMps;
         double perpendicularComponent = Math.sin(coordinateTheta) * robotSpeedMps;
 
-        double vxc = shooterSpeedMps * Math.cos(hoodAngleRad) + parallelComponent;
-        if (Math.abs(vxc) <= 1e-6) {
+        double horizontalLaunchSpeedMps = shooterSpeedMps * Math.cos(hoodAngleRad);
+        double lateralDemandSq = perpendicularComponent * perpendicularComponent;
+        double horizontalSpeedSq = horizontalLaunchSpeedMps * horizontalLaunchSpeedMps;
+        if (horizontalSpeedSq <= lateralDemandSq + 1e-6) {
             return 0.0;
         }
 
+        // The compensated shooter solution already bakes chassis parallel velocity into the
+        // required horizontal launch magnitude. Recover the along-goal component from that
+        // magnitude instead of adding parallel velocity a second time.
+        double launcherParallelComponent = Math.sqrt(horizontalSpeedSq - lateralDemandSq);
+
         // Sign is inverted so turret leads in the physical/camera frame correctly.
-        double leadRad = -Math.atan2(perpendicularComponent, vxc);
+        double leadRad = -Math.atan2(perpendicularComponent, launcherParallelComponent);
         double maxLeadRad = Math.toRadians(maxVelocityLeadDeg);
         return Range.clip(leadRad, -maxLeadRad, maxLeadRad);
     }

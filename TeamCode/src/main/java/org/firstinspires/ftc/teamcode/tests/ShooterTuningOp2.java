@@ -73,6 +73,9 @@ public class ShooterTuningOp2 extends OpMode {
         controller1 = new PIDFController(P,I,0.0, 0);
         controller2 = new PIDFController(P,I,0.0, 0);
         turret = new Turret(hardwareMap, telemetryM);
+        Shooter.landAngle = Math.toRadians(-7);
+        Shooter.shooterDistanceBiasInches = 0;
+        redGoalPose  = new Pose(141, 140, Math.toRadians(90));
         turret.resetTurretEncoder();
         intake = new Intake(hardwareMap, telemetryM);
         intake.setStopper(0.45);
@@ -120,9 +123,10 @@ public class ShooterTuningOp2 extends OpMode {
         }
         if (gamepad1.right_bumper) {
             intake.setStopper(0.35);
+            intake.engagePTO();
             double farExtraInches = Math.max(0, getRedDistance() - 110);
-            if(farExtraInches > 40) {
-                intake.onSpeed(0.7);
+            if(farExtraInches > 0) {
+                intake.onSpeed(0.85);
             }
             else {
                 intake.intake1On();
@@ -172,8 +176,8 @@ public class ShooterTuningOp2 extends OpMode {
 
         if (newShooter) {
             double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
-            targetVelocity = coefficients[1];
-            if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
+            targetVelocity = coefficients[1] - 40;
+            if (Math.abs(actualShotSpeed - targetVelocity) > 30) {
                 hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
             } else {
                 hoodPos = coefficients[0];
@@ -184,9 +188,9 @@ public class ShooterTuningOp2 extends OpMode {
 
         velocity1 = sh.getVelocity();
         velocity2 = sh2.getVelocity();
-        if (sh.getVelocity() > targetVelocity) {
-            sh.setPower(0);
-            sh2.setPower(0);
+        if (sh.getVelocity() - 59 > targetVelocity) {
+            sh.setPower(-1);
+            sh2.setPower(-1);
         }
         else if (sh.getVelocity() < targetVelocity) {
             sh.setPower(1);

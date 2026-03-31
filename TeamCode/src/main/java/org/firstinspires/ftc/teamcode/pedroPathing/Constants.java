@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.control.PredictiveBrakingCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -16,19 +17,20 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(13)
-            .forwardZeroPowerAcceleration(-44)
-            .lateralZeroPowerAcceleration(-67)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.04, 0, 0.003, 0.02))
+            .mass(13.3)
+//            .forwardZeroPowerAcceleration(-44)
+//            .lateralZeroPowerAcceleration(-67)
+//            .translationalPIDFCoefficients(new PIDFCoefficients(0.04, 0, 0.003, 0.02))
 //            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.03, 0.02))
+            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.05, 0.1282, 0.001937))
             .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.08, 0.02))
 //            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.05, 0.01))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.012, 0, 0.0007, 0.6, 0.02))
+//            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.012, 0, 0.0007, 0.6, 0.02))
 //            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.00005, 0.6, 0.02))
 //            .useSecondaryDrivePIDF(true)
 //            .useSecondaryHeadingPIDF(true)
-            .centripetalScaling(0.0005);
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+            .centripetalScaling(0);
+    public static PathConstraints pathConstraints = new PathConstraints(0.95, 100, 1, 1);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(3.8)
