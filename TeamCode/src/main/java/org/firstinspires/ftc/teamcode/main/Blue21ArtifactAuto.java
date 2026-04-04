@@ -73,7 +73,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
     private final Pose collectMiddleMark = new Pose(126, 62.145).mirror();
     private final Pose collectLastMarkCP = new Pose(109.430, 37.845, Math.toRadians(-60)).mirror();
     private final Pose collectLastMark = new Pose(128.360, 35.231).mirror();
-    private final Pose collectRamp = new Pose(135.7, 59.4, Math.toRadians(26.8)).mirror(); // acc 59.4 y
+    private final Pose collectRamp = new Pose(135.7, 60.55 , Math.toRadians(27.4)).mirror(); // acc 59.4 y
     private final Pose hp1 = new Pose(133.136, 27.088, Math.toRadians(-45)).mirror();
     private final Pose hp2 = new Pose(136.522, 11.0639, Math.toRadians(-90)).mirror();
 
@@ -93,7 +93,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         0,
                                         .15,
-                                        HeadingInterpolator.linear(H0, pose1.getHeading())
+                                        HeadingInterpolator.linear(Math.toRadians(180), pose1.getHeading())
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
                                         .15,
@@ -115,7 +115,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         0,
                                         1.0,
-                                        HeadingInterpolator.constant(H0)
+                                        HeadingInterpolator.constant(Math.toRadians(180))
                                 )
                         )
                 )
@@ -134,7 +134,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         .7,
                                         1.0,
-                                        HeadingInterpolator.constant(H0)
+                                        HeadingInterpolator.constant(Math.toRadians(180))
                                 )
                         )
                 )
@@ -197,7 +197,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         .75,
                                         1.0,
-                                        HeadingInterpolator.constant(H0))
+                                        HeadingInterpolator.constant(Math.toRadians(180)))
                         )
                 )
                 .build();
@@ -218,7 +218,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         .7,
                                         1.0,
-                                        HeadingInterpolator.constant(Math.toRadians(-10))
+                                        HeadingInterpolator.constant(Math.toRadians(190))
                                 )
                         ))
                 .build();
@@ -265,7 +265,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
         path8Drifted = follower.pathBuilder()
                 .addPath(new BezierLine(
                         pose1,
-                        new Pose(collectRamp.getX(), collectRamp.getY() - 2.05, collectRamp.getHeading())
+                        new Pose(collectRamp.getX(), collectRamp.getY() + 0.3, collectRamp.getHeading())
                 ))
                 .setHeadingInterpolation(
                         HeadingInterpolator.piecewise(
@@ -296,7 +296,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         .8,
                                         1.0,
-                                        HeadingInterpolator.constant(Math.toRadians(-25))
+                                        HeadingInterpolator.constant(Math.toRadians(105))
                                 )
                         ))
                 .build();
@@ -315,13 +315,13 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         .65,
                                         1.0,
-                                        HeadingInterpolator.constant(H0)
+                                        HeadingInterpolator.constant(Math.toRadians(180))
                                 )
                         ))
                 .addPath(new BezierLine(
                         collectLastMarkCP, collectLastMark
                 ))
-                .setConstantHeadingInterpolation(H0)
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .addPath(new BezierLine(
                         collectLastMark, pose1
                 ))
@@ -335,7 +335,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         0.6,
                                         1,
-                                        HeadingInterpolator.constant(H0)
+                                        HeadingInterpolator.constant(Math.toRadians(180))
                                 )
 //                                new HeadingInterpolator.PiecewiseNode(
 //                                        .8,
@@ -359,7 +359,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                                 new HeadingInterpolator.PiecewiseNode(
                                         .8,
                                         1.0,
-                                        HeadingInterpolator.constant(H0)
+                                        HeadingInterpolator.constant(Math.toRadians(180))
                                 )
                         ))
                 .build();
@@ -452,9 +452,9 @@ public class Blue21ArtifactAuto extends CommandOpMode {
 
         leave = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        pose1, new Pose(pose1.getX() + 5, pose1.getY())
+                        pose1, new Pose(pose1.getX() + 10, pose1.getY())
                 ))
-                .setConstantHeadingInterpolation(H0)
+                .setConstantHeadingInterpolation(Math.toRadians(180))
                 .build();
 
     }
@@ -513,51 +513,51 @@ public class Blue21ArtifactAuto extends CommandOpMode {
 
 
         SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
-//                new setTurretPos(turret, path1.endPose()),
+                new setTurretPos(turret, path1.endPose()),
                 new FollowPathCommand(follower, path1),
 //                new WaitCommand(200),
-//                shooterSequence,
-//                new setTurretPos(turret, path2.endPose()),
+                shooterSequence,
+                new setTurretPos(turret, path2.endPose()),
                 new FollowPathCommand(follower, path2),
 //                new FollowPathCommand(follower, path3),
 //                new WaitCommand(200),
-//                shooterSequence,
+                shooterSequence,
                 new FollowPathCommand(follower, path8),
-//                new setTurretPos(turret, path9.endPose()),
+                new setTurretPos(turret, path9.endPose()),
                 new WaitCommand(750),
-//                new FollowPathCommand(follower, path9),
+                new FollowPathCommand(follower, path9),
 //                new WaitCommand(200),
                 shooterSequence,
                 new FollowPathCommand(follower, path4, true),
-//                new setTurretPos(turret, path5.endPose()),
-//                new ParallelRaceGroup(
-//                        new allBallsDetected(intake),
-//                        new WaitCommand(1700)
-//                ),
+                new setTurretPos(turret, path5.endPose()),
+                new ParallelRaceGroup(
+                        new allBallsDetected(intake),
+                        new WaitCommand(1700)
+                ),
                 new FollowPathCommand(follower, path5),
 //                new WaitCommand(200),
-//                shooterSequence,
-//                new setTurretPos(turret, path6.endPose()),
+                shooterSequence,
+                new setTurretPos(turret, path6.endPose()),
                 new FollowPathCommand(follower, path6),
 //                new FollowPathCommand(follower, path7),
 //                new WaitCommand(200),
-//                shooterSequence,
+                shooterSequence,
                 new FollowPathCommand(follower, path8Drifted, true),
-//                new setTurretPos(turret, path9.endPose()),
-//                new WaitCommand(1000),
+                new setTurretPos(turret, path9.endPose()),
+                new WaitCommand(1000),
                 new FollowPathCommand(follower, path9),
 //                new WaitCommand(200),
-//                shooterSequence,
+                shooterSequence,
 //                new FollowPathCommand(follower, path8),
 //                new WaitCommand(1000),
 //                new FollowPathCommand(follower, path9),
 ////                new WaitCommand(200),
 //                shooterSequence,
                 new setTurretPos(turret, path10.endPose()),
-                new FollowPathCommand(follower, path10)
+                new FollowPathCommand(follower, path10),
 //        new FollowPathCommand(follower, path11),
 //        new WaitCommand(200),
-//                shooterSequence
+                shooterSequence
 //new transfer(intake, true)
 //                new FollowPathCommand(follower, leave)
 //                new FollowPathCommand
@@ -579,11 +579,11 @@ public class Blue21ArtifactAuto extends CommandOpMode {
         super.run();
         loopCounter += 1;
 
-        if(matchTimer.isLessThan(0.25) && (follower.getHeading() > Math.toRadians(4))) {
-            follower.holdPoint(follower.getPose());
-//            follower.startTeleOpDrive(true);
-//            follower.setTeleOpDrive(0, 0, 0);
-        }
+//        if(matchTimer.isLessThan(0.25) && (follower.getHeading() > Math.toRadians(4))) {
+//            follower.holdPoint(follower.getPose());
+////            follower.startTeleOpDrive(true);
+////            follower.setTeleOpDrive(0, 0, 0);
+//        }
 
         telemetry.addData("Actual Speed", 0.5*(shooter.getVelA() - shooter.getVelB()));
         telemetry.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);

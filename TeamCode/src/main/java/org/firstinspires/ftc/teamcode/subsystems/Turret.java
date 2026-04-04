@@ -115,11 +115,17 @@ public class Turret extends SubsystemBase {
 
         double localErr;
         double goalBearing;
-        if (getRedDistance(pos) > 100) {
+        if (chosenAlliance == "RED")
+        { if (getRedDistance(pos) > 100) {
             goalBearing = farRedGoalPose.minus(pos).getAsVector().getTheta();
         } else {
             goalBearing = redGoalPose.minus(pos).getAsVector().getTheta();
+        }}
+
+        else{
+            goalBearing = blueGoalPose.minus(pos).getAsVector().getTheta();
         }
+
         localErr = AngleUnit.normalizeRadians(goalBearing - turretAbsHeading);
 
         double targetAbsHeading = normalizeRadians(turretAbsHeading + localErr);

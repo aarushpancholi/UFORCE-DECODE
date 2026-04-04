@@ -34,7 +34,7 @@ public class RobotConstants {
     public static double maxHoodAngle = 35;
     public static double minHoodAngle = 65;
 
-    public static Pose blueGoalPose = new Pose(6, 141, Math.toRadians(90));
+    public static Pose blueGoalPose = new Pose(4, 141.5, Math.toRadians(90));
     public static Pose redGoalPose  = new Pose(141, 141, Math.toRadians(90));
     public static Pose farRedGoalPose = new Pose(140.4, 141);
 
