@@ -19,7 +19,7 @@ public class Intake extends SubsystemBase {
     private static final double DEFAULT_INTAKE_POWER = 1.0;
     private static final double SLOW_TRANSFER_POWER = 0.6;
     private static final double STOPPER_SHOOT_POS = 0.35;
-    private static final double STOPPER_HOLD_POS = 0.45;
+    private static final double STOPPER_HOLD_POS = 0.48;
 
     private final AnalogInput s1;
     private final AnalogInput s2;
@@ -60,7 +60,7 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         current = intakeMotor.getCurrent(CurrentUnit.AMPS);
 
-        if ((Math.abs(stopper.get() - 0.45) < 0.01) && isBallDetected03() && intakeMotor.isMotorEnabled()) {
+        if ((Math.abs(stopper.get() - 0.48) < 0.01) && isBallDetected03() && intakeMotor.isMotorEnabled()) {
             disengagePTO();
         }
 
@@ -133,7 +133,7 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean isBallDetected03() {
-        return ((s3.getVoltage()*32.50930976)-2.695384202) < 3.5;
+        return (((s3.getVoltage()*32.50930976)-2.695384202) < 3.5);
     }
 
     public boolean areAllBallsDetected() {

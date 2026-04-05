@@ -208,6 +208,9 @@ public class ShooterTuningOp2 extends OpMode {
         telemetryM.addData("Odometry pose", getPose());
         telemetryM.addData("Limelight pose", vision.getLocalization());
         telemetryM.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
+        telemetry.addData("S3", intake.isBallDetected03());
+        telemetry.addData("S2", intake.isBallDetected02());
+        telemetry.addData("S1", intake.isBallDetected01());
 
         loopCounter +=1;
 
