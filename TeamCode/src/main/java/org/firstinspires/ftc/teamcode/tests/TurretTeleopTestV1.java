@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 @Configurable
-@Disabled
+//@Disabled
 @TeleOp(name = "Turret Auto Aim Test", group = "TeleOp")
 public class TurretTeleopTestV1 extends OpMode {
     private Turret turret;

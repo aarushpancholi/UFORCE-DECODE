@@ -37,8 +37,8 @@ public class Turret extends SubsystemBase {
     public boolean autoAimEnabled = false;
     private boolean positionControlEnabled = false;
 
-    private static final double MIN_TURRET_RAD = Math.toRadians(-135);
-    private static final double MAX_TURRET_RAD = Math.toRadians(135);
+    private static final double MIN_TURRET_RAD = Math.toRadians(-180);
+    private static final double MAX_TURRET_RAD = Math.toRadians(150);
     private static final double INCHES_TO_METERS = 0.0254;
 
     public static double maxVelocityLeadDeg = 40.0;
