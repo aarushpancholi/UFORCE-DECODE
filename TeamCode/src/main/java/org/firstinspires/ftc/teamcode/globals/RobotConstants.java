@@ -36,7 +36,7 @@ public class RobotConstants {
 
     public static Pose blueGoalPose = new Pose(2, 141, Math.toRadians(90));
     public static Pose redGoalPose  = new Pose(141, 141, Math.toRadians(90));
-    public static Pose farRedGoalPose = new Pose(140.4, 141);
+    public static Pose farRedGoalPose = new Pose(140.4, 142);
 
     public static Pose redDistancePose = new Pose(138, 138, Math.toRadians(90));
 
@@ -44,7 +44,7 @@ public class RobotConstants {
     public static final int RED_GOAL_TAG_ID = 24;
     public static final int BLUE_GOAL_TAG_ID = 20;
 
-    public static double engagePos = 0;
+    public static double engagePos = 0.1;
     public static double disengagePos = 0.5;
 
     public static final Pose resetPos = new Pose(135, 9, Math.toRadians(0));

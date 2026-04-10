@@ -52,6 +52,7 @@ public class TeleopPractice extends OpMode {
 
     private boolean newShooter = false;
     private Turret turret;
+    private boolean activeHood = true;
     private Follower follower;
     private Shooter shooter;
     private Intake intake;
@@ -128,7 +129,9 @@ public class TeleopPractice extends OpMode {
         } else {
             hoodPos = coefficients[0];
         }
+        if (activeHood) {
         shooter.setHood(hoodPos);
+        }
 
 
         velocity1 = sh.getVelocity();

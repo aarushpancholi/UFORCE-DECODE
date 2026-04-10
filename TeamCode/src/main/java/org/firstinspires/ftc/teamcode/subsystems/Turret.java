@@ -43,9 +43,9 @@ public class Turret extends SubsystemBase {
 
     public static double maxVelocityLeadDeg = 40.0;
 
-    public static double kP = 0.03;
+    public static double kP = 0.02;
     public static double kI = 0.0;
-    public static double kD = 0.0008;
+    public static double kD = 0.0006;
     public static double kF = 0.0002;
     public boolean isAutoCode = false;
     // PIDF (tune these)

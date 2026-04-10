@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tests;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getHeading;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getPose;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getRedDistance;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.maxEPT;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redGoalPose;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.resetPos;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower;
@@ -19,6 +20,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.globals.Localization;
@@ -42,6 +44,7 @@ public class ShooterTuningOp2 extends OpMode {
     public double shooterCurrent;
 
     private boolean newShooter = false;
+    private boolean activeHood = false;
     private Turret turret;
     private Follower follower;
     private Shooter shooter;
@@ -66,6 +69,11 @@ public class ShooterTuningOp2 extends OpMode {
         sh.setDirection(DcMotorSimple.Direction.FORWARD);
         sh2.setDirection(DcMotorSimple.Direction.FORWARD);
         vision = new AprilTagTracking(hardwareMap);
+        targetVelocity = 0;
+        velocity1 = 0;
+        velocity2 = 0;
+        autoAim = false;
+        newShooter = false;
         I = 0.3;
         P = 1.5;
         kS = 0.05;
@@ -73,7 +81,7 @@ public class ShooterTuningOp2 extends OpMode {
         controller1 = new PIDFController(P,I,0.0, 0);
         controller2 = new PIDFController(P,I,0.0, 0);
         turret = new Turret(hardwareMap, telemetryM);
-        Shooter.landAngle = Math.toRadians(-7);
+        Shooter.landAngle = Math.toRadians(-15);
         Shooter.shooterDistanceBiasInches = 0;
         redGoalPose  = new Pose(141, 140, Math.toRadians(90));
         turret.resetTurretEncoder();
@@ -124,9 +132,10 @@ public class ShooterTuningOp2 extends OpMode {
         if (gamepad1.right_bumper) {
             intake.setStopper(0.35);
             intake.engagePTO();
+            activeHood = true;
             double farExtraInches = Math.max(0, getRedDistance() - 110);
             if(farExtraInches > 0) {
-                intake.onSpeed(0.85);
+                intake.onSpeed(0.95);
             }
             else {
                 intake.intake1On();
@@ -136,6 +145,7 @@ public class ShooterTuningOp2 extends OpMode {
         if (gamepad1.rightBumperWasReleased()) {
             intake.setStopper(0.48);
             intake.intakeOff();
+            activeHood = false;
         }
         if (gamepad1.b) {
             intake.intakeOff();
@@ -152,14 +162,15 @@ public class ShooterTuningOp2 extends OpMode {
             follower.startTeleOpDrive();
         }
 
-        if (gamepad1.left_stick_button) {
-            turret.setAutoAim(!autoAim);
+        if (gamepad1.leftStickButtonWasReleased()) {
+            autoAim = !autoAim;
+            turret.setAutoAim(autoAim);
         }
         if(gamepad1.dpadUpWasReleased()) {
-            targetVelocity += 20;
+            targetVelocity = Range.clip(targetVelocity + 20, 0, maxEPT);
         }
         if(gamepad1.dpadDownWasReleased()) {
-            targetVelocity -= 20;
+            targetVelocity = Range.clip(targetVelocity - 20, 0, maxEPT);
         }
         if (gamepad1.dpadRightWasReleased()) {
             hoodPos -= 0.025;
@@ -176,23 +187,29 @@ public class ShooterTuningOp2 extends OpMode {
 
         if (newShooter) {
             double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
-            targetVelocity = coefficients[1] - 40;
+            targetVelocity = Range.clip(coefficients[1] - 40, 0, maxEPT);
             if (Math.abs(actualShotSpeed - targetVelocity) > 30) {
                 hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
             } else {
                 hoodPos = coefficients[0];
             }
-            shooter.setHood(hoodPos);
+            if (activeHood) {
+                shooter.setHood(hoodPos);
+            }
+
+            if (Math.max(0, getRedDistance() - 110)>0){
+                targetVelocity += 40;
+            }
         }
 
 
         velocity1 = sh.getVelocity();
         velocity2 = sh2.getVelocity();
-        if (sh.getVelocity() - 59 > targetVelocity) {
-            sh.setPower(-1);
-            sh2.setPower(-1);
+        if (targetVelocity <= 0) {
+            sh.setPower(0);
+            sh2.setPower(0);
         }
-        else if (sh.getVelocity() < targetVelocity) {
+        else if (actualShotSpeed < targetVelocity - 30) {
             sh.setPower(1);
             sh2.setPower(1);
         }
@@ -204,7 +221,10 @@ public class ShooterTuningOp2 extends OpMode {
 //        sh2.setPower(controller2.calculate(targetVelocity - velocity2, targetVelocity, 0.0));
 
         telemetryM.addData("shooter", targetVelocity);
+        telemetryM.addData("actual shot speed", actualShotSpeed);
         telemetryM.addData("hood pos", hoodPos);
+        telemetryM.addData("shooter current", shooterCurrent);
+        telemetryM.addData("auto aim", autoAim);
         telemetryM.addData("Odometry pose", getPose());
         telemetryM.addData("Limelight pose", vision.getLocalization());
         telemetryM.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);
@@ -219,5 +239,16 @@ public class ShooterTuningOp2 extends OpMode {
         intake.periodic();
         telemetry.update();
         telemetryM.update();
+    }
+
+    @Override
+    public void stop() {
+        targetVelocity = 0;
+        newShooter = false;
+        autoAim = false;
+        sh.setPower(0);
+        sh2.setPower(0);
+        intake.intakeOff();
+        turret.setAutoAim(false);
     }
 }

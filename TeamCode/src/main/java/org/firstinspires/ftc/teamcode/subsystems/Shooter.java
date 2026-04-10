@@ -246,11 +246,11 @@ public class Shooter extends SubsystemBase {
 
         
     public static double getShooterTicksFromSpeed(double speed) {
-        return (28*2.4*speed/(2*Math.PI*0.048));
+        return (28*1.25*2.42*speed/(2*Math.PI*0.048));
     }
 
     public static double getShooterSpeedFromTicks(double ticksPerSecond) {
-        return (ticksPerSecond * Math.PI * 0.048*2) / (28.0*2.4);
+        return (ticksPerSecond * Math.PI * 0.048*2) / (28.0*1.25*2.42);
     }
 
     public static double getLowAngleHoodFromDistanceAndSpeed(double distanceInches, double actualTicksPerSecond) {
