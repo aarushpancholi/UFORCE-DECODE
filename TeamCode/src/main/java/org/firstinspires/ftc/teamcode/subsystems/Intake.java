@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.globals.RobotConstants.engagePos;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 public class Intake extends SubsystemBase {
     private static final double AUTO_STOP_CURRENT_AMPS = 5.0;
     private static final double DEFAULT_INTAKE_POWER = 1.0;
+    private final Timer timer = new Timer();
     private static final double SLOW_TRANSFER_POWER = 0.6;
     private static final double STOPPER_SHOOT_POS = 0.35;
     private static final double STOPPER_HOLD_POS = 0.48;
@@ -25,7 +27,7 @@ public class Intake extends SubsystemBase {
     private final AnalogInput s2;
     private final AnalogInput s3;
 
-    private final DcMotorEx intakeMotor;
+    public final DcMotorEx intakeMotor;
     private final ServoEx stopper;
 
     private final ServoEx pto;

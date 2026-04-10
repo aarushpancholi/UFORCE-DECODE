@@ -504,7 +504,7 @@ public class RedMTI21ArtifactAuto extends CommandOpMode {
                         new turretAutoAim(turret, true)
                 ),
                 new WaitCommand(250),
-                new allBallsGone(intake),
+                new allBallsGone(intake).withTimeout(100),
                 new transfer(intake, false),
                 new turretAutoAim(turret, false)
         );
@@ -574,16 +574,16 @@ public class RedMTI21ArtifactAuto extends CommandOpMode {
         for (LynxModule module : allHubs) {
             module.clearBulkCache();
         }
-        matchTimer.start();
+//        matchTimer.start();
         Localization.update();
         super.run();
         loopCounter += 1;
 
-        if(matchTimer.isLessThan(0.25) && (follower.getHeading() > Math.toRadians(4))) {
-            follower.holdPoint(follower.getPose());
-//            follower.startTeleOpDrive(true);
-//            follower.setTeleOpDrive(0, 0, 0);
-        }
+//        if(matchTimer.isLessThan(0.25) && (follower.getHeading() > Math.toRadians(4))) {
+//            follower.holdPoint(follower.getPose());
+////            follower.startTeleOpDrive(true);
+////            follower.setTeleOpDrive(0, 0, 0);
+//        }
 
         telemetry.addData("Actual Speed", 0.5*(shooter.getVelA() - shooter.getVelB()));
         telemetry.addData("Loop Times", elapsedtime.milliseconds()/loopCounter);

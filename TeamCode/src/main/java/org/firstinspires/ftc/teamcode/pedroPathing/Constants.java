@@ -22,8 +22,12 @@ public class Constants {
 //            .lateralZeroPowerAcceleration(-67)
 //            .translationalPIDFCoefficients(new PIDFCoefficients(0.04, 0, 0.003, 0.02))
 //            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.03, 0.02))
+ //           .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.05, 0.09503, 0.002075))
             .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.05, 0.1282, 0.001937))
+
             .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.08, 0.02))
+       //     .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.1, 0.03))
+
 //            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.05, 0.01))
 //            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.012, 0, 0.0007, 0.6, 0.02))
 //            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.03, 0, 0.00005, 0.6, 0.02))
@@ -52,7 +56,9 @@ public class Constants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .xVelocity(80)
-            .yVelocity(53.2);
+            .yVelocity(53.1);
+//            .xVelocity(69.13)
+//            .yVelocity(42.1);
     ;
 
     public static Follower createFollower(HardwareMap hardwareMap) {

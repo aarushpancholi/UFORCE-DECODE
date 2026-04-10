@@ -16,6 +16,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -38,6 +39,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import java.util.List;
 
 @Configurable
+@Disabled
 @TeleOp(name = "Red TeleOp", group = "TeleOp")
 public class RedTeleop extends CommandOpMode {
     private Turret turret;

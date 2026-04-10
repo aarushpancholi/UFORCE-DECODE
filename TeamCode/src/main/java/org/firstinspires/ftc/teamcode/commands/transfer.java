@@ -33,7 +33,7 @@ public class transfer extends CommandBase {
             return (intakeSubsystem.getStopper() == 0.35);
         }
         else {
-            return (intakeSubsystem.getStopper() == 0.45);
+            return (intakeSubsystem.getStopper() == 0.48);
         }
 
     }

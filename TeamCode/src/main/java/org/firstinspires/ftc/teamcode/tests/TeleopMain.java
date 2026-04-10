@@ -9,6 +9,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -27,6 +28,7 @@ import org.firstinspires.ftc.teamcode.vision.AprilTagTracking;
 
 //@Disabled
 @Configurable
+@Disabled
 @TeleOp(name = "TeleopMain Test", group = "TeleOp")
 public class TeleopMain extends CommandOpMode {
     private Turret turret;

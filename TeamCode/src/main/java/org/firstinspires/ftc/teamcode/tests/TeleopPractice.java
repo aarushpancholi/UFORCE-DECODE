@@ -70,7 +70,7 @@ public class TeleopPractice extends OpMode {
     public void init() {
         elapsedtime = new ElapsedTime();
         elapsedtime.reset();
-        Shooter.landAngle = Math.toRadians(-7);
+        Shooter.landAngle = Math.toRadians(-10);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         sh = hardwareMap.get(DcMotorEx.class, "rsh");
         closeLaunchZone = new PolygonZone(new Point(144, 144), new Point(72, 72), new Point(0, 144));
@@ -87,9 +87,9 @@ public class TeleopPractice extends OpMode {
         turret.setAutoAim(true);
 //        turret.resetTurretEncoder();
         intake = new Intake(hardwareMap, telemetryM);
-        intake.setStopper(0.45);
+        intake.setStopper(0.48);
         follower = createFollower(hardwareMap);
-        if (savedPose != null && savedPose.getHeading() > 1) {
+        if (savedPose != null && Math.abs(savedPose.getHeading()) > 1) {
             follower.setStartingPose(savedPose);
         } else {
 //        follower.setStartingPose(savedPose != null ? savedPose : new Pose(88,75,Math.toRadians(0)));
@@ -122,12 +122,7 @@ public class TeleopPractice extends OpMode {
         double actualShotSpeed = Math.abs(0.5 * (sh.getVelocity() - sh2.getVelocity()));
         double compensatedHoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, actualShotSpeed);
         double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
-        if (shotDistance < 110) {
-            targetVelocity = coefficients[1] - 40;
-        }
-        else {
-            targetVelocity = coefficients[1];
-        }
+        targetVelocity = coefficients[1];
         if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
             hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
         } else {
@@ -144,12 +139,16 @@ public class TeleopPractice extends OpMode {
 //            follower.startTeleOpDrive(true);
 //        }
 
-        if (gamepad1.dpadRightWasReleased()) {
-            redGoalPose  = new Pose(141, redGoalPose.getY() - 0.5, Math.toRadians(90));
+        if (gamepad1.dpadDownWasReleased()) {
+            redGoalPose  = new Pose(redGoalPose.getX(), redGoalPose.getY() - 1, Math.toRadians(90));
+        }
+        if (gamepad1.dpadUpWasReleased()) {
+            redGoalPose  = new Pose(redGoalPose.getX(), redGoalPose.getY() + 1, Math.toRadians(90));
         }
         if (gamepad1.dpadLeftWasReleased()) {
-            redGoalPose  = new Pose(141, redGoalPose.getY() + 0.5, Math.toRadians(90));
-        }
+            redGoalPose  = new Pose(redGoalPose.getX() + 1, redGoalPose.getY(), Math.toRadians(90));        }
+        if (gamepad1.dpadRightWasReleased()) {
+            redGoalPose  = new Pose(redGoalPose.getX() - 1, redGoalPose.getY(), Math.toRadians(90));        }
 
         if(intake.areAllBallsDetected()) {
             gamepad1.rumble(200);
@@ -162,45 +161,56 @@ public class TeleopPractice extends OpMode {
             sensitivity = 1;
         }
 
-
         if (gamepad1.rightBumperWasPressed()) {
-            if ((follower.getPose().distanceFrom(intakeRedRamp) < 20))
-            {
-                follower.followPath(follower.pathBuilder()
-                        .addPath(new BezierCurve(
-                                follower.getPose(),
-                                redRampCP,
-                                intakeRedRamp
-                        ))
-                        .setConstantHeadingInterpolation(intakeRedRamp.getHeading())
-                        .build());
-            }
-            else {
-                follower.followPath(follower.pathBuilder()
-                        .addPath(new BezierCurve(
-                                follower.getPose(),
-                                redRampCP,
-                                intakeRedRamp
-                        ))
-                        .setHeadingInterpolation(
-                                HeadingInterpolator.piecewise(
-                                        new HeadingInterpolator.PiecewiseNode(
-                                                0,
-                                                .5,
-                                                HeadingInterpolator.constant(Math.toRadians(0))
-                                        ),
-                                        new HeadingInterpolator.PiecewiseNode(
-                                                .5,
-                                                1.0,
-                                                HeadingInterpolator.constant(intakeRedRamp.getHeading()))
-                                )
-                        )
-                        .build());
-            }
+            follower.holdPoint(follower.getPose());
         }
         else if (gamepad1.rightBumperWasReleased()) {
             follower.startTeleOpDrive(false);
         }
+
+        if (gamepad1.optionsWasPressed()) {
+            follower.setPose(new Pose(4,9,Math.toRadians(90)));
+        }
+
+
+//        if (gamepad1.rightBumperWasPressed()) {
+//            if ((follower.getPose().distanceFrom(intakeRedRamp) < 20))
+//            {
+//                follower.followPath(follower.pathBuilder()
+//                        .addPath(new BezierCurve(
+//                                follower.getPose(),
+//                                redRampCP,
+//                                intakeRedRamp
+//                        ))
+//                        .setConstantHeadingInterpolation(intakeRedRamp.getHeading())
+//                        .build());
+//            }
+//            else {
+//                follower.followPath(follower.pathBuilder()
+//                        .addPath(new BezierCurve(
+//                                follower.getPose(),
+//                                redRampCP,
+//                                intakeRedRamp
+//                        ))
+//                        .setHeadingInterpolation(
+//                                HeadingInterpolator.piecewise(
+//                                        new HeadingInterpolator.PiecewiseNode(
+//                                                0,
+//                                                .5,
+//                                                HeadingInterpolator.constant(Math.toRadians(0))
+//                                        ),
+//                                        new HeadingInterpolator.PiecewiseNode(
+//                                                .5,
+//                                                1.0,
+//                                                HeadingInterpolator.constant(intakeRedRamp.getHeading()))
+//                                )
+//                        )
+//                        .build());
+//            }
+//        }
+//        else if (gamepad1.rightBumperWasReleased()) {
+//            follower.startTeleOpDrive(false);
+//        }
 
         if (gamepad1.leftBumperWasPressed()) {
             follower.followPath(follower.pathBuilder()
@@ -262,7 +272,7 @@ public class TeleopPractice extends OpMode {
         }
         else if (gamepad2.leftBumperWasReleased()) {
             intake.intakeOff();
-            intake.setStopper(0.45);
+            intake.setStopper(0.48);
         }
 //
 //        if (robotZone.isInside(closeLaunchZone)) {

@@ -10,6 +10,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.globals.Localization;
 import org.firstinspires.ftc.teamcode.vision.AprilTagTracking;
 
 @Configurable
+@Disabled
 @TeleOp(name = "ll testing", group = "TeleOp")
 public class LimelightTesting extends OpMode {
 

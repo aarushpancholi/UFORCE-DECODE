@@ -73,7 +73,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
     private final Pose collectMiddleMark = new Pose(126, 62.145).mirror();
     private final Pose collectLastMarkCP = new Pose(109.430, 37.845, Math.toRadians(-60)).mirror();
     private final Pose collectLastMark = new Pose(128.360, 35.231).mirror();
-    private final Pose collectRamp = new Pose(135.7, 60.65 , Math.toRadians(29.5)).mirror(); // acc 59.4 y
+    private final Pose collectRamp = new Pose(136.2, 60.65 , Math.toRadians(29.5)).mirror(); // acc 59.4 y
     private final Pose hp1 = new Pose(133.136, 27.088, Math.toRadians(-45)).mirror();
     private final Pose hp2 = new Pose(136.522, 11.0639, Math.toRadians(-90)).mirror();
 
@@ -128,11 +128,11 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0,
-                                        .7,
+                                        .6,
                                         HeadingInterpolator.tangent.reverse()
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        .7,
+                                        .6,
                                         1.0,
                                         HeadingInterpolator.constant(Math.toRadians(180))
                                 )
@@ -191,11 +191,11 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0,
-                                        .7,
+                                        .6,
                                         HeadingInterpolator.tangent.reverse()
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        .75,
+                                        .6,
                                         1.0,
                                         HeadingInterpolator.constant(Math.toRadians(180)))
                         )
@@ -212,11 +212,11 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0,
-                                        .7,
+                                        .6,
                                         HeadingInterpolator.tangent.reverse()
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        .7,
+                                        .6,
                                         1.0,
                                         HeadingInterpolator.constant(Math.toRadians(190))
                                 )
@@ -290,11 +290,11 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0,
-                                        .8,
+                                        .6,
                                         HeadingInterpolator.tangent.reverse()
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        .8,
+                                        .6,
                                         1.0,
                                         HeadingInterpolator.constant(Math.toRadians(105))
                                 )
@@ -309,11 +309,11 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                         HeadingInterpolator.piecewise(
                                 new HeadingInterpolator.PiecewiseNode(
                                         0,
-                                        .65,
+                                        .6,
                                         HeadingInterpolator.tangent
                                 ),
                                 new HeadingInterpolator.PiecewiseNode(
-                                        .65,
+                                        .6,
                                         1.0,
                                         HeadingInterpolator.constant(Math.toRadians(180))
                                 )
@@ -478,7 +478,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
         shooter = new Shooter(hardwareMap, telemetryM);
         turret = new Turret(hardwareMap, telemetryM);
         turret.resetTurretEncoder();
-        Shooter.landAngle = Math.toRadians(-7);
+        Shooter.landAngle = Math.toRadians(-10);
 
         intake.setAutoEnabled(true);
         shooter.setAutoShoot(true);
@@ -504,7 +504,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
                         new turretAutoAim(turret, true)
                 ),
                 new WaitCommand(250),
-                new allBallsGone(intake),
+                new allBallsGone(intake).withTimeout(100),
                 new transfer(intake, false),
                 new turretAutoAim(turret, false)
         );
@@ -574,7 +574,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
         for (LynxModule module : allHubs) {
             module.clearBulkCache();
         }
-        matchTimer.start();
+//        matchTimer.start();
         Localization.update();
         super.run();
         loopCounter += 1;

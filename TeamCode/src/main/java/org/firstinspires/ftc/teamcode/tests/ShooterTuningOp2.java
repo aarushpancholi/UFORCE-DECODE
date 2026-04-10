@@ -78,7 +78,7 @@ public class ShooterTuningOp2 extends OpMode {
         redGoalPose  = new Pose(141, 140, Math.toRadians(90));
         turret.resetTurretEncoder();
         intake = new Intake(hardwareMap, telemetryM);
-        intake.setStopper(0.45);
+        intake.setStopper(0.48);
         follower = createFollower(hardwareMap);
         follower.setStartingPose(new Pose(135,9,Math.toRadians(90)));
         Localization.init(follower, telemetryM);
@@ -134,7 +134,7 @@ public class ShooterTuningOp2 extends OpMode {
         }
 
         if (gamepad1.rightBumperWasReleased()) {
-            intake.setStopper(0.45);
+            intake.setStopper(0.48);
             intake.intakeOff();
         }
         if (gamepad1.b) {

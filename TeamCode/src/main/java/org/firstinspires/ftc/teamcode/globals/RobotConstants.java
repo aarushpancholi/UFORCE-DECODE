@@ -45,7 +45,7 @@ public class RobotConstants {
     public static final int BLUE_GOAL_TAG_ID = 20;
 
     public static double engagePos = 0;
-    public static double disengagePos = 0.82;
+    public static double disengagePos = 0.65;
 
     public static final Pose resetPos = new Pose(135, 9, Math.toRadians(0));
 
