@@ -217,7 +217,7 @@ public class Intake extends SubsystemBase {
     public void startTransfer() {
         setStopper(STOPPER_SHOOT_POS);
         engagePTO();
-        intakeMotor.setPower(1);
+        intakeMotor.setPower(0.95);
         shooting = true;
         triggered = false;
     }

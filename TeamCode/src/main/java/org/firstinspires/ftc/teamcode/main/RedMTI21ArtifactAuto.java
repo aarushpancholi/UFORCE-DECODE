@@ -73,7 +73,7 @@ public class RedMTI21ArtifactAuto extends CommandOpMode {
     private final Pose collectMiddleMark = new Pose(126, 62.145);
     private final Pose collectLastMarkCP = new Pose(109.430, 37.845, Math.toRadians(-60));
     private final Pose collectLastMark = new Pose(128.360, 35.231);
-    private final Pose collectRamp = new Pose(135.7, 59.4, Math.toRadians(26.8)); // acc 59.4 y
+    private final Pose collectRamp = new Pose(135.7, 59.2, Math.toRadians(26.8)); // acc 59.4 y
     private final Pose hp1 = new Pose(133.136, 27.088, Math.toRadians(-45));
     private final Pose hp2 = new Pose(136.522, 11.0639, Math.toRadians(-90));
 
@@ -164,7 +164,8 @@ public class RedMTI21ArtifactAuto extends CommandOpMode {
         path4 = follower.pathBuilder()
                 .addPath(new BezierLine(
                         pose1,
-                        collectRamp
+                        new Pose(collectRamp.getX(), collectRamp.getY() - 0.8, collectRamp.getHeading())
+
                 ))
                 .setHeadingInterpolation(
                         HeadingInterpolator.piecewise(
