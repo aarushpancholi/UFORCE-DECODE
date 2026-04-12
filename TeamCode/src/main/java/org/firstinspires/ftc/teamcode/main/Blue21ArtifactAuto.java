@@ -73,7 +73,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
     private final Pose collectMiddleMark = new Pose(126, 62.145).mirror();
     private final Pose collectLastMarkCP = new Pose(109.430, 37.845, Math.toRadians(-60)).mirror();
     private final Pose collectLastMark = new Pose(128.360, 35.231).mirror();
-    private final Pose collectRamp = new Pose(136.2, 60.65 , Math.toRadians(29.5)).mirror(); // acc 59.4 y
+    private final Pose collectRamp = new Pose(136.6, 62 , Math.toRadians(30)).mirror(); // acc 59.4 y
     private final Pose hp1 = new Pose(133.136, 27.088, Math.toRadians(-45)).mirror();
     private final Pose hp2 = new Pose(136.522, 11.0639, Math.toRadians(-90)).mirror();
 
@@ -164,7 +164,8 @@ public class Blue21ArtifactAuto extends CommandOpMode {
         path4 = follower.pathBuilder()
                 .addPath(new BezierLine(
                         pose1,
-                        collectRamp
+                        new Pose(collectRamp.getX(), collectRamp.getY() + 0.8, collectRamp.getHeading())
+
                 ))
                 .setHeadingInterpolation(
                         HeadingInterpolator.piecewise(
@@ -265,7 +266,7 @@ public class Blue21ArtifactAuto extends CommandOpMode {
         path8Drifted = follower.pathBuilder()
                 .addPath(new BezierLine(
                         pose1,
-                        new Pose(collectRamp.getX(), collectRamp.getY() + 0.3, collectRamp.getHeading())
+                        new Pose(collectRamp.getX(), collectRamp.getY() + 0.5, collectRamp.getHeading())
                 ))
                 .setHeadingInterpolation(
                         HeadingInterpolator.piecewise(

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tests;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getHeading;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getPose;
 import static org.firstinspires.ftc.teamcode.globals.Localization.getRedDistance;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.farRedGoalPose;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.maxEPT;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.redGoalPose;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.resetPos;
@@ -135,7 +136,7 @@ public class ShooterTuningOp2 extends OpMode {
             activeHood = true;
             double farExtraInches = Math.max(0, getRedDistance() - 110);
             if(farExtraInches > 0) {
-                intake.onSpeed(0.95);
+                intake.onSpeed(1.0);
             }
             else {
                 intake.intake1On();
@@ -198,8 +199,15 @@ public class ShooterTuningOp2 extends OpMode {
             }
 
             if (Math.max(0, getRedDistance() - 110)>0){
-                targetVelocity += 40;
+                redGoalPose = farRedGoalPose;
+                targetVelocity += 110;
             }
+
+            else {
+                redGoalPose = new Pose (141, 141, Math.toRadians(90));
+            }
+
+
         }
 
 
