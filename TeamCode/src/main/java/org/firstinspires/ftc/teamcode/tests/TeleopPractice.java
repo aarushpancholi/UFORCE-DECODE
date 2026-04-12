@@ -52,7 +52,7 @@ public class TeleopPractice extends OpMode {
 
     private boolean newShooter = false;
     private Turret turret;
-    private boolean activeHood = true;
+    private boolean activeHood = false;
     private Follower follower;
     private Shooter shooter;
     private Intake intake;
@@ -123,14 +123,23 @@ public class TeleopPractice extends OpMode {
         double actualShotSpeed = Math.abs(0.5 * (sh.getVelocity() - sh2.getVelocity()));
         double compensatedHoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, actualShotSpeed);
         double[] coefficients = Shooter.getCoefficientsFromDistance(shotDistance);
-        targetVelocity = coefficients[1];
-        if (Math.abs(actualShotSpeed - targetVelocity) > 60) {
+        targetVelocity = coefficients[1] - 40;
+        if (Math.abs(actualShotSpeed - targetVelocity) > 30) {
             hoodPos = Shooter.getLowAngleHoodFromDistanceAndSpeed(shotDistance, sh.getVelocity());
         } else {
             hoodPos = coefficients[0];
         }
         if (activeHood) {
-        shooter.setHood(hoodPos);
+            shooter.setHood(hoodPos);
+        }
+
+        if (Math.max(0, getRedDistance() - 110)>0){
+            redGoalPose = farRedGoalPose;
+            targetVelocity += 110;
+        }
+
+        else {
+            redGoalPose = new Pose (141, 141, Math.toRadians(90));
         }
 
 
@@ -249,15 +258,8 @@ public class TeleopPractice extends OpMode {
             intake.intake1On();
         }
         if (gamepad2.right_bumper) {
-            double farExtraInches = Math.max(0, getRedDistance() - 110);
-            if(farExtraInches > 0) {
-                intake.onSpeed(0.7);
-            }
-            else {
-                intake.intake1On();
-            }
+            intake.intake1On();
         }
-
         if (gamepad2.rightBumperWasReleased()) {
             intake.intakeOff();
         }
@@ -265,9 +267,10 @@ public class TeleopPractice extends OpMode {
         if (gamepad2.left_bumper) {
             intake.engagePTO();
             intake.setStopper(0.35);
+            activeHood = true;
             double farExtraInches = Math.max(0, getRedDistance() - 110);
             if(farExtraInches > 0) {
-                intake.onSpeed(0.8);
+                intake.onSpeed(1.0);
             }
             else {
                 intake.onSpeed(1);
@@ -275,6 +278,7 @@ public class TeleopPractice extends OpMode {
         }
         else if (gamepad2.leftBumperWasReleased()) {
             intake.intakeOff();
+            activeHood = false;
             intake.setStopper(0.48);
         }
 //
