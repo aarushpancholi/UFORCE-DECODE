@@ -6,8 +6,8 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 public class RobotConstants {
-    public static double maxTurretPos = -523.5;
-    public static double minTurretPos = 523.5;
+    public static double maxTurretPos = 523.5;
+    public static double minTurretPos = -523.5;
 
     public MotorEx frontRight;
     public MotorEx frontLeft;

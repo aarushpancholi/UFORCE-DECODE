@@ -76,6 +76,7 @@ public class TurretTeleopTestV1 extends OpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void loop() {
+        turret.setTargetTicks(target);
 //        engagePos = 0.4;
 //        disengagePos = 0.4;
 //        shooter.setTargetEPT(1000);
