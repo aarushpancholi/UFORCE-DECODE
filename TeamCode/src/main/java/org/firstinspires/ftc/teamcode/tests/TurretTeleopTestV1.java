@@ -53,6 +53,7 @@ public class TurretTeleopTestV1 extends OpMode {
 //        pinpointLocalizer = hardwareMap.get(PinpointLocalizer.class, "pinpoint");
 
         turret = new Turret(hardwareMap, null);
+        turret.setAutoAim(false);
         turret.resetTurretEncoder();
         follower = createFollower(hardwareMap);
         follower.setStartingPose(new Pose(28,0,Math.toRadians(90)));
@@ -81,20 +82,20 @@ public class TurretTeleopTestV1 extends OpMode {
 //        shooter.setAutoShoot(false);
 //        shooter.periodic();
 
-//        turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
-//
-//        if (gamepad1.a) turret.resetTurretEncoder();   // reset
-//        if (gamepad1.b) {                              // manual profiled move
-//            turret.setAutoAim(false);
-//            turret.setTargetTicks(target);             // change target from dashboard
-//        }
-//        if (gamepad1.x) turret.setAutoAim(true);       // auto-aim + profiled tracking
-//        if (gamepad1.y) {                              // center test
-//            turret.setAutoAim(false);
-//            turret.straight();
-//        }
-//
-//        turret.periodic(); // REQUIRED: runs profile + PID
+        turretPID.setCoefficients(new PIDFCoefficients(kP, kI, kD, kF));
+
+        if (gamepad1.a) turret.resetTurretEncoder();   // reset
+        if (gamepad1.b) {                              // manual profiled move
+            turret.setAutoAim(false);
+            turret.setTargetTicks(target);             // change target from dashboard
+        }
+        if (gamepad1.x) turret.setAutoAim(true);       // auto-aim + profiled tracking
+        if (gamepad1.y) {                              // center test
+            turret.setAutoAim(false);
+            turret.straight();
+        }
+
+        turret.periodic(); // REQUIRED: runs profile + PID
 
 //        if (gamepad1.a) {
 //            intake.intake1On();
@@ -115,8 +116,7 @@ public class TurretTeleopTestV1 extends OpMode {
 //        if (gamepad1.b) {
 //            intake.intakeOff();
 //        }
-        intake.engagePTO();
-        intake.intake1On();
+
 
         telemetry.addData("encoder", turret.getPos());
         telemetry.addData("targetTicks", targetTicks);
