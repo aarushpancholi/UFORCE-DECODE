@@ -46,7 +46,7 @@ public class Turret extends SubsystemBase {
     public static double kP = 0.006;
     public static double kI = 0.0;
     public static double kD = 0.0001;
-    public static double kF = 0.0;
+    public static double kF = 0.00008;
     public boolean isAutoCode = false;
     // PIDF (tune these)
     public static PIDFController turretPID = new PIDFController(
