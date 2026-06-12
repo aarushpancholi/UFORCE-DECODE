@@ -70,7 +70,7 @@ public class TeleopPractice extends OpMode {
     public void init() {
         elapsedtime = new ElapsedTime();
         elapsedtime.reset();
-        Shooter.landAngle = Math.toRadians(-10);
+        Shooter.landAngle = Math.toRadians(-15);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         sh = hardwareMap.get(DcMotorEx.class, "rsh");
         closeLaunchZone = new PolygonZone(new Point(144, 144), new Point(72, 72), new Point(0, 144));
